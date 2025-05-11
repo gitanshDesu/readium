@@ -1,7 +1,6 @@
 import { config } from "dotenv";
 import { app } from "./app";
 import connectDB from "@readium/database";
-import { Request, Response } from "express";
 
 config({
   path: "./.env", //env not loading if I don't use ./.env rather than ./env
