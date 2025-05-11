@@ -1,0 +1,13 @@
+{
+	"extends": ["//"],
+	"tasks": {
+		"build": {
+			"outputs": ["dist/**"],
+			"inputs": ["$TURBO_DEFAULT$", ".env*",".env",".env.*"]
+		},
+		"dev": {
+            "env": ["MONGODB_URI","DB_NAME"],
+			"inputs": ["$TURBO_DEFAULT$", ".env",".env.*"]
+        }
+	}
+}

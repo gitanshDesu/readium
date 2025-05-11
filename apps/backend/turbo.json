@@ -3,7 +3,12 @@
 	"tasks": {
 		"build": {
 			"outputs": ["dist/**"],
+			"inputs": ["$TURBO_DEFAULT$", ".env"],
+			"env": ["CORS_FRONTEND_ORIGIN","CORS_WEB_ORIGIN","PORT","MONGODB_URI","DB_NAME"]
+		},
+		"dev": {
+            "env": ["CORS_FRONTEND_ORIGIN","CORS_WEB_ORIGIN","PORT","MONGODB_URI","DB_NAME"],
 			"inputs": ["$TURBO_DEFAULT$", ".env"]
-		}
+        }
 	}
 }

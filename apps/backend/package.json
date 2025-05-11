@@ -20,6 +20,7 @@
 	"license": "ISC",
 	"description": "",
 	"dependencies": {
+		"@readium/database":"workspace:*",
 		"cookie-parser": "^1.4.7",
 		"cors": "^2.8.5",
 		"dotenv": "^16.5.0",
