@@ -5,7 +5,7 @@
   "main": "index.js",
   "exports": {
     ".":"./src/index.ts",
-    "./*": "./src/*.ts"
+    "./*":"./src/models/*.ts"
   },
   "scripts": {
     "lint": "eslint --max-warning 0",
