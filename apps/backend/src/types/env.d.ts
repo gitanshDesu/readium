@@ -5,8 +5,6 @@ declare global {
       CORS_FRONTEND_ORIGIN: string;
       CORS_WEB_ORIGIN: string;
       PORT: string;
-      MONGODB_URI: string;
-      DB_NAME: string;
     }
   }
 }

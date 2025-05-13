@@ -4,8 +4,8 @@
   "private": "true",
   "main": "index.js",
   "exports": {
-    ".":"./src/index.ts",
-    "./*":"./src/models/*.ts"
+    ".": "./src/index.ts",
+    "./*": "./src/models/*.ts"
   },
   "scripts": {
     "lint": "eslint --max-warning 0",
@@ -13,6 +13,7 @@
   },
   "devDependencies": {
     "@readium/typescript-config": "workspace:*",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.3",
     "typescript": "^5.8.3"
   },
@@ -21,7 +22,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "dotenv": "^16.5.0",
+    "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.14.2"
   }
 }
