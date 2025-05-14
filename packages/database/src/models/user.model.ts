@@ -52,6 +52,9 @@ const userSchema = new mongoose.Schema(
       },
     ],
     blogHistory: [blogHistorySchema],
+    refreshToken: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
