@@ -1,0 +1,29 @@
+{
+    "name": "@readium/auth",
+    "version": "1.0.0",
+    "private": "true",
+    "exports": {
+        "./registerUser": {
+            "types": "./src/controller/auth.controller.ts",
+            "default": "./dist/controller/auth.controller.js"
+        }
+    },
+    "scripts": {
+        "lint": "eslint --max-warning 0",
+        "check-types": "tsc --noEmit",
+        "build": "tsc -b"
+    },
+    "devDependencies": {
+        "@readium/typescript-config": "workspace:*",
+        "@types/express": "^5.0.1",
+        "typescript": "^5.8.3"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "@readium/utils": "workspace:*",
+        "express": "^5.1.0"
+    }
+}

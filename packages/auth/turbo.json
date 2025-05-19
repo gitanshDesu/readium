@@ -1,0 +1,14 @@
+{
+	"extends": ["//"],
+	"tasks": {
+		"dev": {
+            "env": [],
+			"inputs": ["$TURBO_DEFAULT$", ".env",".env.*"]
+        },
+        "build":{
+            "env":[],
+            "inputs":["$TURBO_DEFAULT$", ".env",".env.*"],
+            "outputs":["./dist/**"]
+        }
+	}
+}

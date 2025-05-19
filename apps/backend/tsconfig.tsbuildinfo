@@ -1,1 +1,1 @@
-{"root":["./src/app.ts","./src/constants.ts","./src/index.ts","./src/types/env.d.ts"],"version":"5.8.3"}
+{"root":["./src/app.ts","./src/constants.ts","./src/index.ts","./src/controllers/blog.controller.ts","./src/controllers/following.controller.ts","./src/controllers/user.controller.ts","./src/types/env.d.ts"],"version":"5.8.3"}

@@ -1,0 +1,29 @@
+{
+    "name": "@readium/utils",
+    "version": "1.0.0",
+    "private": "true",
+    "exports": {
+        "./tryCatchWrapper": {
+            "types": "./src/tryCatchWrapper.util.ts",
+            "default": "./dist/tryCatchWrapper.util.js"
+        }
+    },
+    "scripts": {
+        "lint": "eslint --max-warning 0",
+        "check-types": "tsc --noEmit",
+        "build": "tsc -b"
+    },
+    "devDependencies": {
+        "@readium/typescript-config": "workspace:*",
+        "@types/express": "^5.0.1",
+        "@types/node": "^22.15.3",
+        "typescript": "^5.8.3"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "express": "^5.1.0"
+    }
+}

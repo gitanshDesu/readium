@@ -20,9 +20,15 @@ importers:
 
   apps/backend:
     dependencies:
+      '@readium/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@readium/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@readium/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       cookie-parser:
         specifier: ^1.4.7
         version: 1.4.7
@@ -94,6 +100,25 @@ importers:
       typescript:
         specifier: 5.8.2
         version: 5.8.2
+
+  packages/auth:
+    dependencies:
+      '@readium/utils':
+        specifier: workspace:*
+        version: link:../utils
+      express:
+        specifier: ^5.1.0
+        version: 5.1.0
+    devDependencies:
+      '@readium/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/express':
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
   packages/database:
     dependencies:
@@ -194,6 +219,25 @@ importers:
       typescript:
         specifier: 5.8.2
         version: 5.8.2
+
+  packages/utils:
+    dependencies:
+      express:
+        specifier: ^5.1.0
+        version: 5.1.0
+    devDependencies:
+      '@readium/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/express':
+        specifier: ^5.0.1
+        version: 5.0.1
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.15.3
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
 
 packages:
 
