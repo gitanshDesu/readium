@@ -6,6 +6,14 @@
         "./tryCatchWrapper": {
             "types": "./src/tryCatchWrapper.util.ts",
             "default": "./dist/tryCatchWrapper.util.js"
+        },
+        "./customError":{
+            "types":"./src/customError.util.ts",
+            "default":"./dist/customError.util.js"
+        },
+        "./customApiResponse":{
+            "types":"./src/customApiResponse.util.ts",
+            "default":"./dist/customApiResponse.util.js"
         }
     },
     "scripts": {
