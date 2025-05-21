@@ -1,1 +1,1 @@
-{"root":["./src/controller/auth.controller.ts","./src/middleware/auth.middleware.ts"],"version":"5.8.3"}
+{"root":["./src/controller/auth.controller.ts","./src/middleware/auth.middleware.ts","./src/types/global.d.ts"],"version":"5.8.3"}

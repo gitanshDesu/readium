@@ -1,0 +1,34 @@
+{
+    "name": "@readium/zod",
+    "version": "1.0.0",
+    "exports": {
+        ".":{
+          "types":"./src/index.ts",
+          "default":"./dist/index.js"  
+        },
+        "./registerUser":{
+            "types":"./src/registerUser.ts",
+            "default":"./dist/registerUser.js"
+        },
+        "./loginUser":{
+            "types":"./src/loginUser.ts",
+            "default":"./dist/registerUser.js"
+        }
+    },
+    "scripts": {
+        "lint": "eslint --max-warning 0",
+        "check-types": "tsc --noEmit",
+        "build":"tsc - --watch"
+    },
+    "devDependencies": {
+        "@readium/typescript-config": "workspace:*",
+        "typescript": "^5.8.3"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "zod": "^3.25.7"
+    }
+}

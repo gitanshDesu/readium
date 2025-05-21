@@ -2,7 +2,7 @@
 	"extends": ["//"],
 	"tasks": {
 		"dev": {
-            "env": ["MONGODB_URI","DB_NAME","ACCESS_TOKEN_SECRET","ACCESS_TOKEN_EXPIRY","REFRESH_TOKEN_SECRET","REFRESH_TOKEN_EXPIRY"],
+            "env": [],
 			"inputs": ["$TURBO_DEFAULT$", ".env",".env.*"]
         },
 		"build":{
@@ -10,5 +10,6 @@
             "inputs":["$TURBO_DEFAULT$", ".env",".env.*"],
             "outputs":["./dist/**"]
         }
+	
 	}
 }

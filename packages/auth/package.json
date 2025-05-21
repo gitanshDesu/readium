@@ -6,15 +6,20 @@
         "./registerUser": {
             "types": "./src/controller/auth.controller.ts",
             "default": "./dist/controller/auth.controller.js"
+        },
+        "./loginUser":{
+            "types":"./src/controller/auth.controller.ts",
+            "default":"./dist/controller/auth.controller.js"
         }
     },
     "scripts": {
         "lint": "eslint --max-warning 0",
         "check-types": "tsc --noEmit",
-        "build": "tsc -b"
+        "build": "tsc -b --watch"
     },
     "devDependencies": {
         "@readium/typescript-config": "workspace:*",
+        "@readium/types":"workspace:*",
         "@types/express": "^5.0.1",
         "typescript": "^5.8.3"
     },
@@ -24,6 +29,9 @@
     "description": "",
     "dependencies": {
         "@readium/utils": "workspace:*",
-        "express": "^5.1.0"
+        "@readium/zod":"workspace:*",
+        "@readium/database":"workspace:*",
+        "express": "^5.1.0",
+        "zod": "^3.25.7"
     }
 }

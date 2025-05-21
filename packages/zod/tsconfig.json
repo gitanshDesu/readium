@@ -2,8 +2,6 @@
   "extends": "@readium/typescript-config/base.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist",
-    "strict": true,
-    "strictNullChecks": true
+    "outDir": "./dist"
   }
 }

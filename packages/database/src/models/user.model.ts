@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Model } from "mongoose";
 import bcrypt from "bcryptjs";
 import { Blog } from "./blog.model";
 import { Comment } from "./comment.model";
@@ -7,6 +7,34 @@ import { Image } from "./image.model";
 import { Video } from "./video.model";
 import { Following } from "./following.model";
 import jwt from "jsonwebtoken";
+
+interface IBlogHistory {
+  blog: mongoose.Types.ObjectId;
+  viewedAt: Date;
+}
+interface IUser {
+  username: string;
+  firstName: string;
+  lastName?: string;
+  email: string;
+  isVerified: boolean;
+  avatar?: string;
+  password: string;
+  bookmarks: Array<mongoose.Types.ObjectId>;
+  blogHistory: Array<IBlogHistory>;
+  refreshToken: string | undefined;
+  createdAt: NativeDate;
+  updatedAt: NativeDate;
+}
+interface UserMethods {
+  //TODO: find and set correct type for "this" in isPasswordCorrect method
+  isPasswordCorrect(
+    this: mongoose.Document & IUser,
+    password: string
+  ): Promise<boolean>;
+  generateAccessToken(): string;
+  generateRefreshToken(): string;
+}
 
 const blogHistorySchema = new mongoose.Schema({
   blog: {
@@ -19,13 +47,14 @@ const blogHistorySchema = new mongoose.Schema({
   },
 });
 
-const userSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema<IUser, Model<IUser>, UserMethods>(
   {
     username: {
       type: String,
       unique: true, //index, not a validator
       required: true,
       lowercase: true,
+      index: true,
     },
     firstName: {
       type: String,
@@ -37,6 +66,12 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
+      unique: true, // to make sure user can create only a single account with an email.
+      index: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false, // toggle to true after user verifies its email
     },
     avatar: {
       type: String,
@@ -67,26 +102,6 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-//post hook to delete all user's blogs,likes,replies,comment,after user is deleted successfully - similar to delete on Cascade SQL
-userSchema.post("findOneAndDelete", async function () {
-  console.log(this.getQuery());
-  const author = this.getQuery()?._id;
-  await Comment.deleteMany({ commentedBy: author });
-  await Reply.deleteMany({ repliedBy: author });
-  //if all blogs are getting deleted we don't need image and video links assets in each blog in our DB.So, first delete images and videos
-  const allAuthorBlogs = await this.find({ author });
-  allAuthorBlogs.map(async (blog) => {
-    await Image.deleteMany({ blog: blog._id });
-    await Video.deleteMany({ blog: blog._id });
-  });
-  //now delete all the blogs
-  await Blog.deleteMany({ author });
-  //Remove author followers
-  await Following.deleteMany({ following: author });
-  //Remove author from other author's follower's list
-  await Following.deleteMany({ follower: author });
-});
-
 //Adding method to check if password is correct
 userSchema.methods.isPasswordCorrect = async function (password: string) {
   return await bcrypt.compare(password, this.password);
@@ -113,11 +128,31 @@ userSchema.methods.generateRefreshToken = function () {
     {
       _id: this._id,
     },
-    process.env.REFRESH_TOKEN_SECRET,
+    process.env.REFRESH_TOKEN_SECRET!,
     {
-      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY!,
     }
   );
 };
+
+//post hook to delete all user's blogs,likes,replies,comment,after user is deleted successfully - similar to delete on Cascade SQL
+userSchema.post("findOneAndDelete", async function () {
+  console.log(this.getQuery());
+  const author = this.getQuery()?._id;
+  await Comment.deleteMany({ commentedBy: author });
+  await Reply.deleteMany({ repliedBy: author });
+  //if all blogs are getting deleted we don't need image and video links assets in each blog in our DB.So, first delete images and videos
+  const allAuthorBlogs = await this.find({ author });
+  allAuthorBlogs.map(async (blog) => {
+    await Image.deleteMany({ blog: blog._id });
+    await Video.deleteMany({ blog: blog._id });
+  });
+  //now delete all the blogs
+  await Blog.deleteMany({ author });
+  //Remove author followers
+  await Following.deleteMany({ following: author });
+  //Remove author from other author's follower's list
+  await Following.deleteMany({ follower: author });
+});
 
 export const User = mongoose.model("User", userSchema);

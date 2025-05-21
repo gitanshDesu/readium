@@ -3,6 +3,10 @@
     "version": "1.0.0",
     "private": "true",
     "exports": {
+        ".":{
+            "types":"./src/index.ts",
+            "default":"./dist/index.js"
+        },
         "./tryCatchWrapper": {
             "types": "./src/tryCatchWrapper.util.ts",
             "default": "./dist/tryCatchWrapper.util.js"
@@ -14,15 +18,20 @@
         "./customApiResponse":{
             "types":"./src/customApiResponse.util.ts",
             "default":"./dist/customApiResponse.util.js"
+        },
+        "./generateTokens":{
+            "types":"./src/generateTokens.util.ts",
+            "default":"./dist/generateTokens.util.js"
         }
     },
     "scripts": {
         "lint": "eslint --max-warning 0",
         "check-types": "tsc --noEmit",
-        "build": "tsc -b"
+        "build": "tsc -b --watch"
     },
     "devDependencies": {
         "@readium/typescript-config": "workspace:*",
+        "@readium/types":"workspace:*",
         "@types/express": "^5.0.1",
         "@types/node": "^22.15.3",
         "typescript": "^5.8.3"
@@ -32,6 +41,7 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
-        "express": "^5.1.0"
+        "express": "^5.1.0",
+        "@readium/database":"workspace:*"
     }
 }

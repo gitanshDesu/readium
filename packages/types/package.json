@@ -1,0 +1,26 @@
+{
+    "name": "@readium/types",
+    "version": "0.0.0",
+    "private": "true",
+    "exports": {
+        "./env": {
+            "types": "./src/env.d.ts"
+        }
+    },
+    "scripts": {
+        "check-types": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@readium/typescript-config": "workspace:*",
+        "@types/jsonwebtoken": "^9.0.9",
+        "@types/node": "^22.15.3",
+        "typescript": "^5.8.3"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "dependencies": {
+        "jsonwebtoken": "^9.0.2"
+    }
+}
