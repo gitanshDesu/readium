@@ -28,10 +28,7 @@ interface IUser {
 }
 interface UserMethods {
   //TODO: find and set correct type for "this" in isPasswordCorrect method
-  isPasswordCorrect(
-    this: mongoose.Document & IUser,
-    password: string
-  ): Promise<boolean>;
+  isPasswordCorrect(this: IUser, password: string): Promise<boolean>;
   generateAccessToken(): string;
   generateRefreshToken(): string;
 }
