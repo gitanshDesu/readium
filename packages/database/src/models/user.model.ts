@@ -1,4 +1,4 @@
-import mongoose, { Model } from "mongoose";
+import mongoose, { HydratedDocument, InferSchemaType, Model } from "mongoose";
 import bcrypt from "bcryptjs";
 import { Blog } from "./blog.model";
 import { Comment } from "./comment.model";
@@ -13,6 +13,8 @@ interface IBlogHistory {
   viewedAt: Date;
 }
 interface IUser {
+  googleId?: string;
+  provider?: string;
   username: string;
   firstName: string;
   lastName?: string;
@@ -22,6 +24,7 @@ interface IUser {
   password: string;
   bookmarks: Array<mongoose.Types.ObjectId>;
   blogHistory: Array<IBlogHistory>;
+  accessToken: string | undefined;
   refreshToken: string | undefined;
   createdAt: NativeDate;
   updatedAt: NativeDate;
@@ -46,6 +49,12 @@ const blogHistorySchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema<IUser, Model<IUser>, UserMethods>(
   {
+    googleId: {
+      type: String, // unique id returned after SSO with Google
+    },
+    provider: {
+      type: String, // store provider if used google / any other provider like github,twitter,facebook etc.
+    },
     username: {
       type: String,
       unique: true, //index, not a validator
@@ -84,8 +93,13 @@ const userSchema = new mongoose.Schema<IUser, Model<IUser>, UserMethods>(
       },
     ],
     blogHistory: [blogHistorySchema],
+    accessToken: {
+      type: String,
+      default: undefined,
+    },
     refreshToken: {
       type: String,
+      default: undefined,
     },
   },
   { timestamps: true }
@@ -152,4 +166,10 @@ userSchema.post("findOneAndDelete", async function () {
   await Following.deleteMany({ follower: author });
 });
 
-export const User = mongoose.model("User", userSchema);
+//extracting type of User Document so that we can set type in CustomRequest interface in auth middleware
+type SchemaType = InferSchemaType<typeof userSchema>;
+export type UserDocumentType = HydratedDocument<SchemaType>;
+
+const User = mongoose.model("User", userSchema);
+
+export { User };

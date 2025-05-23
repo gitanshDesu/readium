@@ -7,9 +7,13 @@
             "types": "./src/controller/auth.controller.ts",
             "default": "./dist/controller/auth.controller.js"
         },
-        "./loginUser":{
-            "types":"./src/controller/auth.controller.ts",
-            "default":"./dist/controller/auth.controller.js"
+        "./loginUser": {
+            "types": "./src/controller/auth.controller.ts",
+            "default": "./dist/controller/auth.controller.js"
+        },
+        "./authRouter": {
+            "types": "./src/routes/auth.routes.ts",
+            "default": "./dist/routes/auth.routes.js"
         }
     },
     "scripts": {
@@ -18,9 +22,11 @@
         "build": "tsc -b --watch"
     },
     "devDependencies": {
+        "@readium/types": "workspace:*",
         "@readium/typescript-config": "workspace:*",
-        "@readium/types":"workspace:*",
         "@types/express": "^5.0.1",
+        "@types/jsonwebtoken": "^9.0.9",
+        "@types/passport": "^1.0.17",
         "typescript": "^5.8.3"
     },
     "keywords": [],
@@ -28,10 +34,13 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
+        "@readium/database": "workspace:*",
         "@readium/utils": "workspace:*",
-        "@readium/zod":"workspace:*",
-        "@readium/database":"workspace:*",
+        "@readium/zod": "workspace:*",
         "express": "^5.1.0",
+        "jsonwebtoken": "^9.0.2",
+        "passport": "^0.7.0",
+        "passport-google-oidc": "^0.1.0",
         "zod": "^3.25.7"
     }
 }

@@ -1,0 +1,1 @@
+interface CustomRequest extends Request {}

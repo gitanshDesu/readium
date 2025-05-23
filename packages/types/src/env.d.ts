@@ -13,6 +13,10 @@ declare global {
       ACCESS_TOKEN_EXPIRY: ExpiryTime;
       REFRESH_TOKEN_SECRET: string;
       REFRESH_TOKEN_EXPIRY: ExpiryTime;
+      GOOGLE_CLIENT_ID: string;
+      GOOGLE_CLIENT_SECRET: string;
+      GOOGLE_CALLBACK_URL: string;
+      FRONTEND_REDIRECT_URI: string;
     }
   }
 }

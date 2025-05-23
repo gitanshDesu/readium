@@ -44,6 +44,12 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
+      passport:
+        specifier: ^0.7.0
+        version: 0.7.0
+      passport-google-oidc:
+        specifier: ^0.1.0
+        version: 0.1.0
     devDependencies:
       '@readium/types':
         specifier: workspace:*
@@ -118,6 +124,15 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.1.0
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.2
+      passport:
+        specifier: ^0.7.0
+        version: 0.7.0
+      passport-google-oidc:
+        specifier: ^0.1.0
+        version: 0.1.0
       zod:
         specifier: ^3.25.7
         version: 3.25.7
@@ -131,6 +146,12 @@ importers:
       '@types/express':
         specifier: ^5.0.1
         version: 5.0.1
+      '@types/jsonwebtoken':
+        specifier: ^9.0.9
+        version: 9.0.9
+      '@types/passport':
+        specifier: ^1.0.17
+        version: 1.0.17
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -635,6 +656,9 @@ packages:
 
   '@types/node@22.15.3':
     resolution: {integrity: sha512-lX7HFZeHf4QG/J7tBZqrCAXwz9J5RD56Y6MpP0eJkka8p+K0RY/yBTW7CYFJ4VGCclxqOLKmiGP5juQc6MKgcw==}
+
+  '@types/passport@1.0.17':
+    resolution: {integrity: sha512-aciLyx+wDwT2t2/kJGJR2AEeBz0nJU4WuRX04Wu9Dqc5lSUtwu0WERPHYsLhF9PtseiAMPBGNUOtFjxZ56prsg==}
 
   '@types/qs@6.9.18':
     resolution: {integrity: sha512-kK7dgTYDyGqS+e2Q4aK9X3D7q234CIZ1Bv0q/7Z5IwRDoADNU81xXJK/YVyLbLTZCoIwUoDoffFeF+p/eIklAA==}
@@ -1887,6 +1911,9 @@ packages:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
     engines: {node: '>=8'}
 
+  oauth@0.10.2:
+    resolution: {integrity: sha512-JtFnB+8nxDEXgNyniwz573xxbKSOu3R8D40xQKqcjwJ2CDkYqUDI53o6IuzDJBx60Z8VKCm271+t8iFjakrl8Q==}
+
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
@@ -1980,6 +2007,22 @@ packages:
   pascal-case@2.0.1:
     resolution: {integrity: sha512-qjS4s8rBOJa2Xm0jmxXiyh1+OFf6ekCWOvUaRgAQSktzlTbMotS0nmG9gyYAybCWBcuP4fsBeRCKNwGBnMe2OQ==}
 
+  passport-google-oidc@0.1.0:
+    resolution: {integrity: sha512-/TtFXaWvmubm5kXNoJMyzBfxhnZ0lnBPA6w6rmQMP9klmHZf0ArE8IrIEt3yAHoiDzGx4eTO7YasKQFbPsNtVA==}
+    engines: {node: '>= 0.4.0'}
+
+  passport-openidconnect@0.1.2:
+    resolution: {integrity: sha512-JX3rTyW+KFZ/E9OF/IpXJPbyLO9vGzcmXB5FgSP2jfL3LGKJPdV7zUE8rWeKeeI/iueQggOeFa3onrCmhxXZTg==}
+    engines: {node: '>= 0.6.0'}
+
+  passport-strategy@1.0.0:
+    resolution: {integrity: sha512-CB97UUvDKJde2V0KDWWB3lyf6PC3FaZP7YxZ2G8OAtn9p4HI9j9JLP9qjOGZFvyl8uwNT8qM+hGnz/n16NI7oA==}
+    engines: {node: '>= 0.4.0'}
+
+  passport@0.7.0:
+    resolution: {integrity: sha512-cPLl+qZpSc+ireUvt+IzqbED1cHHkDoVYMo30jbJIdOOjQ1MQYZBPiNvmi8UM6lJuOpTPXJGZQk0DtC4y61MYQ==}
+    engines: {node: '>= 0.4.0'}
+
   path-case@2.1.1:
     resolution: {integrity: sha512-Ou0N05MioItesaLr9q8TtHVWmJ6fxWdqKB2RohFmNWVyJ+2zeKIeDNWAN6B/Pe7wpzWChhZX6nONYmOnMeJQ/Q==}
 
@@ -2005,6 +2048,9 @@ packages:
   path-type@4.0.0:
     resolution: {integrity: sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==}
     engines: {node: '>=8'}
+
+  pause@0.0.1:
+    resolution: {integrity: sha512-KG8UEiEVkR3wGEb4m5yZkVCzigAD+cVEJck2CzYZO37ZGJfctvVptVO192MwrtPhzONn6go8ylnOdMhKqi4nfg==}
 
   picocolors@1.0.1:
     resolution: {integrity: sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew==}
@@ -2518,6 +2564,10 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
+  utils-merge@1.0.1:
+    resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
+    engines: {node: '>= 0.4.0'}
+
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
 
@@ -2921,6 +2971,10 @@ snapshots:
   '@types/node@22.15.3':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/passport@1.0.17':
+    dependencies:
+      '@types/express': 5.0.1
 
   '@types/qs@6.9.18': {}
 
@@ -4438,6 +4492,8 @@ snapshots:
     dependencies:
       path-key: 3.1.1
 
+  oauth@0.10.2: {}
+
   object-assign@4.1.1: {}
 
   object-inspect@1.13.4: {}
@@ -4570,6 +4626,23 @@ snapshots:
       camel-case: 3.0.0
       upper-case-first: 1.1.2
 
+  passport-google-oidc@0.1.0:
+    dependencies:
+      passport-openidconnect: 0.1.2
+
+  passport-openidconnect@0.1.2:
+    dependencies:
+      oauth: 0.10.2
+      passport-strategy: 1.0.0
+
+  passport-strategy@1.0.0: {}
+
+  passport@0.7.0:
+    dependencies:
+      passport-strategy: 1.0.0
+      pause: 0.0.1
+      utils-merge: 1.0.1
+
   path-case@2.1.1:
     dependencies:
       no-case: 2.3.2
@@ -4585,6 +4658,8 @@ snapshots:
   path-to-regexp@8.2.0: {}
 
   path-type@4.0.0: {}
+
+  pause@0.0.1: {}
 
   picocolors@1.0.1: {}
 
@@ -5198,6 +5273,8 @@ snapshots:
       punycode: 2.3.1
 
   util-deprecate@1.0.2: {}
+
+  utils-merge@1.0.1: {}
 
   v8-compile-cache-lib@3.0.1: {}
 

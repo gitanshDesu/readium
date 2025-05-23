@@ -8,7 +8,7 @@
 import { User } from "@readium/database/user.model";
 import { CustomApiResponse } from "@readium/utils/customApiResponse";
 import { CustomError } from "@readium/utils/customError";
-import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
+import { CustomRequest, tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { generateAccessAndRefreshToken } from "@readium/utils/generateTokens";
 import { registerUserInputSchema } from "@readium/zod/registerUser";
 import { loginUserInputSchema } from "@readium/zod/loginUser";
@@ -146,5 +146,17 @@ export const loginUser = tryCatchWrapper(
       .json(
         new CustomApiResponse(200, existingUser, "User Logged In Successfully!")
       );
+  }
+);
+
+export const loginViaGoogleHandler = tryCatchWrapper(
+  async (req: CustomRequest, res: Response) => {
+    const accessToken = req.user?.accessToken;
+    const refreshToken = req.user?.refreshToken;
+    res
+      .status(200)
+      .cookie("accessToken", accessToken)
+      .cookie("refreshToken", refreshToken)
+      .redirect(process.env.FRONTEND_REDIRECT_URI);
   }
 );
