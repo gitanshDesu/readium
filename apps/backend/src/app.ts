@@ -1,6 +1,7 @@
-import express, { Express } from "express";
+import express, { Express, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { CustomError } from "@readium/utils/customError";
 
 const app: Express = express();
 
@@ -23,5 +24,17 @@ app.use(express.static("public"));
 
 //cookie-parser
 app.use(cookieParser());
+
+//custom error handling middleware (all the next(err) will divert err to this middleware)
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    // can't modify response, delegate to Express' default error handler
+    return next(err);
+  } else {
+    res
+      .status(500)
+      .json(new CustomError(500, `${err} : Internal Server Error`));
+  }
+});
 
 export { app };
