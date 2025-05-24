@@ -5,6 +5,12 @@
     "exports": {
         "./env": {
             "types": "./src/env.d.ts"
+        },
+        "./passport-google-oidc":{
+            "types":"./src/passport-google-oidc.d.ts"
+        },
+        "./express":{
+            "types":"./src/express.d.ts"
         }
     },
     "scripts": {
@@ -12,8 +18,10 @@
     },
     "devDependencies": {
         "@readium/typescript-config": "workspace:*",
+        "@readium/database":"workspace:*",
         "@types/jsonwebtoken": "^9.0.9",
         "@types/node": "^22.15.3",
+        "@types/express": "^5.0.1",
         "typescript": "^5.8.3"
     },
     "keywords": [],
@@ -21,6 +29,7 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
+        "express": "^5.1.0",
         "jsonwebtoken": "^9.0.2"
     }
 }

@@ -8,7 +8,7 @@ interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
 }
 
-export const isLoggedIn = tryCatchWrapper(
+export const isLoggedIn = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response, next?: NextFunction) => {
     try {
       const token =

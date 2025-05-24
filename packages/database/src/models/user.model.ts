@@ -51,6 +51,7 @@ const userSchema = new mongoose.Schema<IUser, Model<IUser>, UserMethods>(
   {
     googleId: {
       type: String, // unique id returned after SSO with Google
+      sparse: true, // Allows document without googleId (for e.g. in local signups)
     },
     provider: {
       type: String, // store provider if used google / any other provider like github,twitter,facebook etc.

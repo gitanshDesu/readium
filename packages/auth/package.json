@@ -14,6 +14,10 @@
         "./authRouter": {
             "types": "./src/routes/auth.routes.ts",
             "default": "./dist/routes/auth.routes.js"
+        },
+        "./passportConfig": {
+            "types": "./src/middleware/passport.middleware.ts",
+            "default": "./dist/middleware/passport.middleware.js"
         }
     },
     "scripts": {
@@ -24,6 +28,7 @@
     "devDependencies": {
         "@readium/types": "workspace:*",
         "@readium/typescript-config": "workspace:*",
+        "@types/dotenv": "^8.2.3",
         "@types/express": "^5.0.1",
         "@types/jsonwebtoken": "^9.0.9",
         "@types/passport": "^1.0.17",
@@ -37,6 +42,7 @@
         "@readium/database": "workspace:*",
         "@readium/utils": "workspace:*",
         "@readium/zod": "workspace:*",
+        "dotenv": "^16.5.0",
         "express": "^5.1.0",
         "jsonwebtoken": "^9.0.2",
         "passport": "^0.7.0",

@@ -1,19 +1,15 @@
-import { User, UserDocumentType } from "@readium/database/user.model";
 import { NextFunction, Request, Response } from "express";
 
-//need to export this else TS throws error: Exported variable 'registerUser' has or is using name 'CustomRequest' from external module
-export interface CustomRequest extends Request {
-  user?: UserDocumentType;
-}
-
-type RequestHandler = (
-  req: CustomRequest,
+type AsyncHandler<T extends Request = Request> = (
+  req: T,
   res: Response,
-  next?: NextFunction
-) => Promise<Response<any, Record<string, any>>> | Promise<unknown>;
+  next: NextFunction
+) => Promise<unknown>;
 
-export const tryCatchWrapper = (fn: RequestHandler) => {
+export const tryCatchWrapper = <T extends Request = Request>(
+  fn: AsyncHandler<T>
+) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch((err) => next(err));
+    Promise.resolve(fn(req as T, res, next)).catch((err) => next(err));
   };
 };

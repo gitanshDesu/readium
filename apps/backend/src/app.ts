@@ -3,6 +3,9 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { CustomError } from "@readium/utils/customError";
 
+import passport from "@readium/auth/passportConfig";
+import cookieSession from "cookie-session";
+
 const app: Express = express();
 
 //cors
@@ -24,6 +27,18 @@ app.use(express.static("public"));
 
 //cookie-parser
 app.use(cookieParser());
+
+//setting up cookie-session as OpenID connect requires us to create a session
+app.use(
+  cookieSession({
+    maxAge: process.env.MAX_AGE,
+    keys: [process.env.COOKIE_SESSION_KEY],
+  })
+);
+
+//Initializing passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 //custom error handling middleware (all the next(err) will divert err to this middleware)
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

@@ -5,17 +5,21 @@
     - After all the validations and checks create a new user and save; create access and refresh token for them; save new user in DB;and at last return a 201 with new user data (username, firstName,lastName,avatar link)
 
 */
-import { User } from "@readium/database/user.model";
+import { User, UserDocumentType } from "@readium/database/user.model";
 import { CustomApiResponse } from "@readium/utils/customApiResponse";
 import { CustomError } from "@readium/utils/customError";
-import { CustomRequest, tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
+import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { generateAccessAndRefreshToken } from "@readium/utils/generateTokens";
 import { registerUserInputSchema } from "@readium/zod/registerUser";
 import { loginUserInputSchema } from "@readium/zod/loginUser";
 import { Request, Response } from "express";
 import { z } from "zod/v4";
 
-export const registerUser = tryCatchWrapper(
+interface CustomRequest extends Request {
+  user?: NonNullable<UserDocumentType>;
+}
+
+export const registerUser = tryCatchWrapper<Request>(
   async (req: Request, res: Response) => {
     //1. Get username,firstName,lastName,password,email from req.body
     const { username, firstName, lastName, password, email } = req.body;
@@ -97,7 +101,7 @@ export const registerUser = tryCatchWrapper(
   }
 );
 
-export const loginUser = tryCatchWrapper(
+export const loginUser = tryCatchWrapper<Request>(
   async (req: Request, res: Response) => {
     //1. get username, email, password from req.body
     const { username, email, password } = req.body;
@@ -149,14 +153,8 @@ export const loginUser = tryCatchWrapper(
   }
 );
 
-export const loginViaGoogleHandler = tryCatchWrapper(
+export const loginViaGoogleHandler = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
-    const accessToken = req.user?.accessToken;
-    const refreshToken = req.user?.refreshToken;
-    res
-      .status(200)
-      .cookie("accessToken", accessToken)
-      .cookie("refreshToken", refreshToken)
-      .redirect(process.env.FRONTEND_REDIRECT_URI);
+    res.status(200).redirect(process.env.FRONTEND_REDIRECT_URI);
   }
 );
