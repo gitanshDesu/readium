@@ -8,25 +8,33 @@ interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
 }
 
-export const isLoggedIn = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response, next?: NextFunction) => {
+type MixedRequest = CustomRequest & Request;
+
+export const isLoggedIn = tryCatchWrapper<MixedRequest>(
+  async (req: MixedRequest, res: Response, next: NextFunction) => {
     try {
-      const token =
-        req.cookies?.accessToken ||
-        req.header("Authorization")?.replace("Bearer ", "");
-      if (!token) {
-        throw new CustomError(401, "Unauthorized request!");
+      //This logic makes sure that is there a session set up by passport (because we used oauth for signin)
+      if (req.user && req.user?.provider === "google") {
+        //if session is set - then next else proceed with normal verification logic
+        return next();
+      } else {
+        const token =
+          req.cookies?.accessToken ||
+          req.header("Authorization")?.replace("Bearer ", "");
+        if (!token) {
+          throw new CustomError(401, "Unauthorized request!");
+        }
+        const decodedToken = jwt.verify(
+          token,
+          process.env.ACCESS_TOKEN_SECRET
+        ) as JwtPayload;
+        const user = await User.findById(decodedToken?._id).select("-password");
+        if (!user) {
+          throw new CustomError(401, "Invalid Access Token");
+        }
+        req.user = user;
+        next();
       }
-      const decodedToken = jwt.verify(
-        token,
-        process.env.ACCESS_TOKEN_SECRET
-      ) as JwtPayload;
-      const user = await User.findById(decodedToken?._id).select("-password");
-      if (!user) {
-        throw new CustomError(401, "Invalid Access Token");
-      }
-      req.user = user;
-      next!();
     } catch (error) {
       throw new CustomError(
         401,

@@ -165,6 +165,8 @@ export const loginViaGoogleHandler = tryCatchWrapper<CustomRequest>(
   }
 );
 
+//NOTE: Since we are now doing auth using 2 methods in which we setup session in one (oauth) and in another we set up access and refersh token inside cookies. Hence, in protected routes we need to make sure we account for both the methods i.e. we do if (req. && provider === "google") { //if used session }; else {// in case access and refershToken are used} or we might not need this step (but test with and without this step)
+
 export const verifyEmailHandler = tryCatchWrapper<Request>(
   async (req: Request, res: Response) => {}
 );
@@ -173,36 +175,60 @@ export const resetPasswordHandler = tryCatchWrapper<Request>(
   async (req: Request, res: Response) => {}
 );
 
-export const oAuthLogoutHandler = tryCatchWrapper<CustomRequest>(
+export const LogoutHandler = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     //Needed to terminate login session created by Password-this function is exposed on `req` by Passport.js only.
-    if (req.user) {
+    if (req.user && req.user.provider === "google") {
       req.logOut((err: Error) => {
         console.log("Error occured while logging user out: ", err);
       });
+      return res
+        .status(200)
+        .json(new CustomApiResponse(200, {}, "User Logged Out Successfully!"));
+    } else {
+      await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+          $set: {
+            refreshToken: undefined,
+          },
+        },
+        { new: true }
+      );
+      const options = {
+        httpOnly: true,
+        secure: true,
+      };
+      return res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new CustomApiResponse(200, {}, "User Logged Out Successfully"));
     }
   }
 );
 
-export const localAuthLogoutHandler = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response) => {
-    await User.findByIdAndUpdate(
-      req.user?._id,
-      {
-        $set: {
-          refreshToken: undefined,
-        },
-      },
-      { new: true }
-    );
-    const options = {
-      httpOnly: true,
-      secure: true,
-    };
-    return res
-      .status(200)
-      .clearCookie("accessToken", options)
-      .clearCookie("refreshToken", options)
-      .json(new CustomApiResponse(200, {}, "User Logged Out Successfully"));
-  }
-);
+//As we modified isLoggedIn middleware to handle the case of session set up by passport, so we don't need another route, we can freely use isLoggedIn middleware to cover both passport and local auth cases.
+
+// export const localAuthLogoutHandler = tryCatchWrapper<CustomRequest>(
+//   async (req: CustomRequest, res: Response) => {
+//     await User.findByIdAndUpdate(
+//       req.user?._id,
+//       {
+//         $set: {
+//           refreshToken: undefined,
+//         },
+//       },
+//       { new: true }
+//     );
+//     const options = {
+//       httpOnly: true,
+//       secure: true,
+//     };
+//     return res
+//       .status(200)
+//       .clearCookie("accessToken", options)
+//       .clearCookie("refreshToken", options)
+//       .json(new CustomApiResponse(200, {}, "User Logged Out Successfully"));
+//   }
+// );
