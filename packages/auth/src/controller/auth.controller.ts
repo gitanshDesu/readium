@@ -74,7 +74,7 @@ export const registerUser = tryCatchWrapper<Request>(
       password,
     });
 
-    //TODO: 6. Send magic link to verify email of user, and toggle isVerified === true
+    //TODO: 6. Send magic link / verification code to verify email of user, and toggle isVerified === true
 
     // if (!newUser.isVerified) {
     //   return res.status(401).json(new CustomError(401, "Verify Email First!"));
@@ -85,18 +85,20 @@ export const registerUser = tryCatchWrapper<Request>(
     const { accessToken, refershToken } = await generateAccessAndRefreshToken(
       newUser.username
     );
-    //TODO: Test if accessToken and refershToken are generated correctly: Create Route to register user in apps/backend and start testing in postman
-
-    console.log(accessToken, refershToken);
 
     newUser.refreshToken = refershToken;
     await newUser.save();
 
-    //8. set access token in cookies
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
 
-    //9. Return created user as response data with 201 status code and user created successfully message.
+    //9. Set access token and refersh tokens in cookies && Return created user as response data with 201 status code and user created successfully message.
     return res
       .status(201)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refershToken, options)
       .json(new CustomApiResponse(200, newUser, "User Created Successfully!"));
   }
 );
@@ -143,10 +145,14 @@ export const loginUser = tryCatchWrapper<Request>(
     await existingUser.save();
 
     //7. set cookies for access token and refersh token and send 200 response
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
     return res
       .status(200)
-      .cookie("accessToken", accessToken)
-      .cookie("refreshToken", refershToken)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refershToken, options)
       .json(
         new CustomApiResponse(200, existingUser, "User Logged In Successfully!")
       );
@@ -156,5 +162,47 @@ export const loginUser = tryCatchWrapper<Request>(
 export const loginViaGoogleHandler = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     res.status(200).redirect(process.env.FRONTEND_REDIRECT_URI);
+  }
+);
+
+export const verifyEmailHandler = tryCatchWrapper<Request>(
+  async (req: Request, res: Response) => {}
+);
+
+export const resetPasswordHandler = tryCatchWrapper<Request>(
+  async (req: Request, res: Response) => {}
+);
+
+export const oAuthLogoutHandler = tryCatchWrapper<CustomRequest>(
+  async (req: CustomRequest, res: Response) => {
+    //Needed to terminate login session created by Password-this function is exposed on `req` by Passport.js only.
+    if (req.user) {
+      req.logOut((err: Error) => {
+        console.log("Error occured while logging user out: ", err);
+      });
+    }
+  }
+);
+
+export const localAuthLogoutHandler = tryCatchWrapper<CustomRequest>(
+  async (req: CustomRequest, res: Response) => {
+    await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          refreshToken: undefined,
+        },
+      },
+      { new: true }
+    );
+    const options = {
+      httpOnly: true,
+      secure: true,
+    };
+    return res
+      .status(200)
+      .clearCookie("accessToken", options)
+      .clearCookie("refreshToken", options)
+      .json(new CustomApiResponse(200, {}, "User Logged Out Successfully"));
   }
 );

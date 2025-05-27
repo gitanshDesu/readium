@@ -31,6 +31,7 @@
         "@types/dotenv": "^8.2.3",
         "@types/express": "^5.0.1",
         "@types/jsonwebtoken": "^9.0.9",
+        "@types/nodemailer": "^6.4.17",
         "@types/passport": "^1.0.17",
         "typescript": "^5.8.3"
     },
@@ -45,6 +46,7 @@
         "dotenv": "^16.5.0",
         "express": "^5.1.0",
         "jsonwebtoken": "^9.0.2",
+        "nodemailer": "^7.0.3",
         "passport": "^0.7.0",
         "passport-google-oidc": "^0.1.0",
         "zod": "^3.25.7"

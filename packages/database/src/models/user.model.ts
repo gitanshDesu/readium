@@ -24,7 +24,6 @@ interface IUser {
   password: string;
   bookmarks: Array<mongoose.Types.ObjectId>;
   blogHistory: Array<IBlogHistory>;
-  accessToken: string | undefined;
   refreshToken: string | undefined;
   createdAt: NativeDate;
   updatedAt: NativeDate;
@@ -94,10 +93,6 @@ const userSchema = new mongoose.Schema<IUser, Model<IUser>, UserMethods>(
       },
     ],
     blogHistory: [blogHistorySchema],
-    accessToken: {
-      type: String,
-      default: undefined,
-    },
     refreshToken: {
       type: String,
       default: undefined,
