@@ -44,15 +44,6 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.1.0
-      jsonwebtoken:
-        specifier: ^9.0.2
-        version: 9.0.2
-      passport:
-        specifier: ^0.7.0
-        version: 0.7.0
-      passport-google-oidc:
-        specifier: ^0.1.0
-        version: 0.1.0
     devDependencies:
       '@readium/types':
         specifier: workspace:*
@@ -72,12 +63,6 @@ importers:
       '@types/express':
         specifier: ^5.0.1
         version: 5.0.1
-      '@types/jsonwebtoken':
-        specifier: ^9.0.9
-        version: 9.0.9
-      '@types/passport':
-        specifier: ^1.0.17
-        version: 1.0.17
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -130,6 +115,9 @@ importers:
       '@readium/zod':
         specifier: workspace:*
         version: link:../zod
+      bcryptjs:
+        specifier: ^3.0.2
+        version: 3.0.2
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0

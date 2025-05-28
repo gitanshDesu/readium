@@ -3,7 +3,6 @@
     - Get username, fistName, lastName, password, email, avatar link
     - Validate username is unique, verify email; first check if email already exists; then check if email is legit by sending a magic link.
     - After all the validations and checks create a new user and save; create access and refresh token for them; save new user in DB;and at last return a 201 with new user data (username, firstName,lastName,avatar link)
-
 */
 import { User, UserDocumentType } from "@readium/database/user.model";
 import { CustomApiResponse } from "@readium/utils/customApiResponse";
@@ -18,6 +17,8 @@ import { z } from "zod/v4";
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
 }
+
+type MixedRequest = CustomRequest & Request;
 
 export const registerUser = tryCatchWrapper<Request>(
   async (req: Request, res: Response) => {
@@ -175,8 +176,8 @@ export const resetPasswordHandler = tryCatchWrapper<Request>(
   async (req: Request, res: Response) => {}
 );
 
-export const LogoutHandler = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response) => {
+export const LogoutHandler = tryCatchWrapper<MixedRequest>(
+  async (req: MixedRequest, res: Response) => {
     //Needed to terminate login session created by Password-this function is exposed on `req` by Passport.js only.
     if (req.user && req.user.provider === "google") {
       req.logOut((err: Error) => {
