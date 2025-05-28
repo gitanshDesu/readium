@@ -115,9 +115,6 @@ importers:
       '@readium/zod':
         specifier: workspace:*
         version: link:../zod
-      bcryptjs:
-        specifier: ^3.0.2
-        version: 3.0.2
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0

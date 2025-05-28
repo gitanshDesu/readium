@@ -19,6 +19,8 @@ declare global {
       FRONTEND_REDIRECT_URI: string;
       MAX_AGE: number;
       COOKIE_SESSION_KEY: string;
+      ETHEREAL_USER: string;
+      ETHEREAL_PASS: string;
     }
   }
 }
