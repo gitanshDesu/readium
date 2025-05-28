@@ -1,4 +1,4 @@
-import { UserDocumentType } from "@readium/database/user.model";
+import { User, UserDocumentType } from "@readium/database/user.model";
 import nodemailer from "nodemailer";
 import { verificationCodeGenerator } from "./generateVerificationCode.helper";
 
@@ -9,6 +9,8 @@ const verificationCode: string = verificationCodeGenerator(10, {
   alphabets: true,
   specialChars: false,
 });
+
+//Persist this verification code with in User DB and create verification code expiry (persist this as well)
 
 const transporter = nodemailer.createTransport({
   host: "smtp.ethereal.email",
@@ -21,6 +23,18 @@ const transporter = nodemailer.createTransport({
 
 export const sendMail = async (user: UserDocumentType, mailType: mailType) => {
   try {
+    //Persist verification code in DB along with verificationCode expiry.
+    await User.findByIdAndUpdate(
+      user._id,
+      {
+        $set: {
+          verificationCode: verificationCode,
+          verificationExpiry: Date.now() * 60 * 60 * 1000,
+        },
+      },
+      { new: true }
+    );
+
     const HTMLBody: string = `
         <p> 
         Enter this verification Code to ${mailType === "VERIFY" ? "Verify your Email" : "Reset Your Password"}
