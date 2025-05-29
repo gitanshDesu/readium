@@ -4,6 +4,8 @@ import {
   loginViaGoogleHandler,
   LogoutHandler,
   registerUser,
+  resetPasswordHandler,
+  verifyEmailHandler,
 } from "../controller/auth.controller";
 import passport from "../config/passport.config";
 import { isLoggedIn } from "../middleware/auth.middleware";
@@ -21,8 +23,8 @@ router
   .route("/google/callback")
   .get(passport.authenticate("google"), loginViaGoogleHandler);
 
-router.route("/verify-email").post();
-router.route("forgot-password").post();
+router.route("/verify-email").post(isLoggedIn, verifyEmailHandler);
+router.route("forgot-password").post(isLoggedIn, resetPasswordHandler);
 router.route("logout").post(isLoggedIn, LogoutHandler);
 
 export { router };

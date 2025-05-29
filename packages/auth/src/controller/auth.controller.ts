@@ -13,6 +13,10 @@ import { registerUserInputSchema } from "@readium/zod/registerUser";
 import { loginUserInputSchema } from "@readium/zod/loginUser";
 import { Request, Response } from "express";
 import { z } from "zod/v4";
+import { sendMail } from "../helper/sendMail.helper";
+import { verifyEmail } from "../helper/verifyEmail.helper";
+import { use } from "passport";
+import { resetPassword } from "../helper/resetPassword.helper";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
@@ -22,11 +26,10 @@ type MixedRequest = CustomRequest & Request;
 
 export const registerUser = tryCatchWrapper<Request>(
   async (req: Request, res: Response) => {
-    //1. Get username,firstName,lastName,password,email from req.body
     const { username, firstName, lastName, password, email } = req.body;
+
     //TODO: 2. Get avatar image from req.file using multer
 
-    //3. do z.safeParse() to validate req.body object we get has correct inputs.
     if (
       !z.safeParse(registerUserInputSchema, {
         username,
@@ -41,31 +44,17 @@ export const registerUser = tryCatchWrapper<Request>(
         .json(new CustomError(400, "Send Correct User fields!"));
     }
 
-    console.log(req.body);
-
     //4. if correct inputs check if username and email are unique (i.e. no other user with same username and email exists)
 
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
 
     if (existingUser) {
-      if (existingUser.username === username && existingUser.email === email) {
-        return res
-          .status(400)
-          .json(new CustomError(400, "username and email taken already!"));
-      }
-      if (existingUser.username === username) {
-        return res
-          .status(400)
-          .json(new CustomError(400, "username taken already!"));
-      }
-      if (existingUser.email === email) {
-        return res
-          .status(400)
-          .json(new CustomError(400, "email already exists!"));
-      }
-    }
+      return res
+        .status(400)
+        .json(new CustomError(400, "username and email taken already!"));
 
-    //5. After email is verified create new user using username, firstName, lastName, email,password (password will get hashed pre-save(thanks to pre-save hook))
+      // It is recommended to not tell exactly that either username sent or email sent is already taken for security
+    }
 
     const newUser = await User.create({
       username,
@@ -77,11 +66,12 @@ export const registerUser = tryCatchWrapper<Request>(
 
     //TODO: 6. Send magic link / verification code to verify email of user, and toggle isVerified === true
 
+    const mailResponse = await sendMail(newUser, "VERIFY");
+    console.log(mailResponse);
+
     // if (!newUser.isVerified) {
     //   return res.status(401).json(new CustomError(401, "Verify Email First!"));
     // }
-
-    //7. generate access and refresh token and update refersh token field with refersh token (this step will let user to access protected endpoints after registering).
 
     const { accessToken, refershToken } = await generateAccessAndRefreshToken(
       newUser.username
@@ -95,7 +85,6 @@ export const registerUser = tryCatchWrapper<Request>(
       secure: true,
     };
 
-    //9. Set access token and refersh tokens in cookies && Return created user as response data with 201 status code and user created successfully message.
     return res
       .status(201)
       .cookie("accessToken", accessToken, options)
@@ -128,6 +117,18 @@ export const loginUser = tryCatchWrapper<Request>(
     }
 
     //TODO: 4. Check if email sent is verified, if not return 401, Please verify email!
+    if (!existingUser.isVerified) {
+      // Send Mail on user's email with verification code
+      const mailResponse = await sendMail(existingUser, "VERIFY");
+      return res
+        .status(401)
+        .json(
+          new CustomError(
+            401,
+            "Please Verify Your Email! Check Your Mail for Valid Verification Code!"
+          )
+        );
+    }
 
     //5. Check if the password sent is correct; if not send 401, Invalid password
     const isPasswordValid = await existingUser.isPasswordCorrect(password);
@@ -166,14 +167,62 @@ export const loginViaGoogleHandler = tryCatchWrapper<CustomRequest>(
   }
 );
 
-//NOTE: Since we are now doing auth using 2 methods in which we setup session in one (oauth) and in another we set up access and refersh token inside cookies. Hence, in protected routes we need to make sure we account for both the methods i.e. we do if (req. && provider === "google") { //if used session }; else {// in case access and refershToken are used} or we might not need this step (but test with and without this step)
+//TODO: Add Input Validation in verifyEmailHandler and resetPasswordHandler controller.
 
-export const verifyEmailHandler = tryCatchWrapper<Request>(
-  async (req: Request, res: Response) => {}
+export const verifyEmailHandler = tryCatchWrapper<CustomRequest>(
+  async (req: CustomRequest, res: Response) => {
+    const { verificationCode } = req.body;
+    const isVerified = await verifyEmail(req.user!, verificationCode);
+    if (isVerified) {
+      return res
+        .status(200)
+        .json(new CustomApiResponse(200, {}, "Email Verified Successfully!"));
+    }
+    //isVerified is false it means either verification code is wrong or user has exceeded verification code expiry
+    //In this case again send verification code
+    const mailResponse = await sendMail(req.user!, "VERIFY");
+    return res
+      .status(200)
+      .json(
+        new CustomApiResponse(400, "Invalid Verification Code Send! Retry!")
+      );
+  }
 );
 
-export const resetPasswordHandler = tryCatchWrapper<Request>(
-  async (req: Request, res: Response) => {}
+//TODO: Edge Case Test try to hit this end point and other endpoints with google login and see what happens
+export const resetPasswordHandler = tryCatchWrapper<CustomRequest>(
+  async (req: CustomRequest, res: Response) => {
+    const { oldPassword, verificationCode, newPassword } = req.body;
+    //1. check if password sent is correct.
+    const user = await User.findById(req.user?._id);
+    if (!user) {
+      return res.status(404).json(new CustomError(404, "User Doesn't Exist!"));
+    }
+    const isValidPassword = await user?.isPasswordCorrect(oldPassword);
+    if (!isValidPassword) {
+      return res.status(400).json(new CustomError(400, "Invalid Password"));
+    }
+    //2. send mail with verification code to reset password
+    const mailResponse = await sendMail(user, "RESET");
+    //3. reset password
+    const isPasswordReset = await resetPassword(
+      user,
+      newPassword,
+      verificationCode
+    );
+    if (!isPasswordReset) {
+      // it means verification code sent is incorrect, send another for retry.
+      await sendMail(user, "RESET");
+      return res
+        .status(400)
+        .json(
+          new CustomError(400, "Verification Code sent is Invalid! Retry!")
+        );
+    }
+    return res
+      .status(200)
+      .json(new CustomApiResponse(200, {}, "Password Reset Successfully!"));
+  }
 );
 
 export const LogoutHandler = tryCatchWrapper<MixedRequest>(
@@ -208,28 +257,3 @@ export const LogoutHandler = tryCatchWrapper<MixedRequest>(
     }
   }
 );
-
-//As we modified isLoggedIn middleware to handle the case of session set up by passport, so we don't need another route, we can freely use isLoggedIn middleware to cover both passport and local auth cases.
-
-// export const localAuthLogoutHandler = tryCatchWrapper<CustomRequest>(
-//   async (req: CustomRequest, res: Response) => {
-//     await User.findByIdAndUpdate(
-//       req.user?._id,
-//       {
-//         $set: {
-//           refreshToken: undefined,
-//         },
-//       },
-//       { new: true }
-//     );
-//     const options = {
-//       httpOnly: true,
-//       secure: true,
-//     };
-//     return res
-//       .status(200)
-//       .clearCookie("accessToken", options)
-//       .clearCookie("refreshToken", options)
-//       .json(new CustomApiResponse(200, {}, "User Logged Out Successfully"));
-//   }
-// );
