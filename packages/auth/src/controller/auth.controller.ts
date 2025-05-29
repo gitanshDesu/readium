@@ -17,6 +17,7 @@ import { sendMail } from "../helper/sendMail.helper";
 import { verifyEmail } from "../helper/verifyEmail.helper";
 import { use } from "passport";
 import { resetPassword } from "../helper/resetPassword.helper";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
@@ -73,12 +74,12 @@ export const registerUser = tryCatchWrapper<Request>(
     //   return res.status(401).json(new CustomError(401, "Verify Email First!"));
     // }
 
-    const { accessToken, refershToken } = await generateAccessAndRefreshToken(
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
       newUser.username
     );
 
-    newUser.refreshToken = refershToken;
-    await newUser.save();
+    newUser.refreshToken = refreshToken;
+    await newUser.save({ validateBeforeSave: false });
 
     const options = {
       httpOnly: true,
@@ -88,7 +89,7 @@ export const registerUser = tryCatchWrapper<Request>(
     return res
       .status(201)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refershToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .json(new CustomApiResponse(200, newUser, "User Created Successfully!"));
   }
 );
@@ -139,12 +140,12 @@ export const loginUser = tryCatchWrapper<Request>(
 
     //6. generate access and refersh tokens, and set refershToken in existingUser.refeshToken field
 
-    const { accessToken, refershToken } = await generateAccessAndRefreshToken(
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
       existingUser.username
     );
 
-    existingUser.refreshToken = refershToken;
-    await existingUser.save();
+    existingUser.refreshToken = refreshToken;
+    await existingUser.save({ validateBeforeSave: true });
 
     //7. set cookies for access token and refersh token and send 200 response
     const options = {
@@ -154,7 +155,7 @@ export const loginUser = tryCatchWrapper<Request>(
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", refershToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .json(
         new CustomApiResponse(200, existingUser, "User Logged In Successfully!")
       );
@@ -254,6 +255,50 @@ export const LogoutHandler = tryCatchWrapper<MixedRequest>(
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken", options)
         .json(new CustomApiResponse(200, {}, "User Logged Out Successfully"));
+    }
+  }
+);
+
+export const refershAccessTokenHandler = tryCatchWrapper<CustomRequest>(
+  async (req: CustomRequest, res: Response) => {
+    const incomingRefreshToken =
+      req.cookies.refreshToken || req.body.refreshToken;
+    if (!incomingRefreshToken) {
+      throw new CustomError(401, "Unauthorized Request!");
+    }
+    try {
+      const decodedToken: JwtPayload = jwt.verify(
+        incomingRefreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+      ) as JwtPayload;
+      const user = await User.findById(decodedToken?._id);
+      if (!user) {
+        throw new CustomError(401, "Invalid Refresh Token");
+      }
+      if (incomingRefreshToken !== user?.refreshToken) {
+        throw new CustomError(401, "Refresh Token is Expired or Used");
+      }
+      const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+        user.username
+      );
+      const options = {
+        httpOnly: true,
+        secure: true,
+      };
+      return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+          new CustomApiResponse(
+            200,
+            { accessToken, refreshToken },
+            "Access Token Refreshed"
+          )
+        );
+    } catch (error) {
+      console.log("Error Occurred while Refreshing Access Token: ", error);
+      throw new CustomError(401, "Invalid Refresh Token");
     }
   }
 );

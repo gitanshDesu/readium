@@ -3,6 +3,7 @@ import {
   loginUser,
   loginViaGoogleHandler,
   LogoutHandler,
+  refershAccessTokenHandler,
   registerUser,
   resetPasswordHandler,
   verifyEmailHandler,
@@ -26,5 +27,6 @@ router
 router.route("/verify-email").post(isLoggedIn, verifyEmailHandler);
 router.route("forgot-password").post(isLoggedIn, resetPasswordHandler);
 router.route("logout").post(isLoggedIn, LogoutHandler);
+router.route("refresh-token").post(refershAccessTokenHandler); //doesn't require isLoggedIn as we are doing jwt.verify inside controller
 
 export { router };

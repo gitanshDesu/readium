@@ -20,8 +20,7 @@ export const resetPassword = async (
     validUser.password = newPassword;
     validUser.verificationCode = undefined;
     validUser.verificationExpiry = undefined;
-    //TODO: might need to set {validateBeforeSave:false} flag, check if password set is correct, and if w/o this any error occurs in while testing in Postman (applicable in other places where we used save() method)
-    await validUser.save();
+    await validUser.save({ validateBeforeSave: false });
     console.log(validUser.isPasswordCorrect(newPassword));
     return true;
   } catch (error) {

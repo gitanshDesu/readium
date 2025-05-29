@@ -28,7 +28,7 @@ export const verifyEmail = async (
       validUser.isVerified = true;
       validUser.verificationCode = undefined;
       validUser.verificationExpiry = undefined;
-      await validUser.save();
+      await validUser.save({ validateBeforeSave: false });
       return validUser.isVerified;
     }
     return false;
