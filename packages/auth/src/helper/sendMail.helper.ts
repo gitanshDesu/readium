@@ -24,6 +24,7 @@ const transporter = nodemailer.createTransport({
 export const sendMail = async (user: UserDocumentType, mailType: mailType) => {
   try {
     //Persist verification code in DB along with verificationCode expiry.
+    //TODO: Hash verification code
     await User.findByIdAndUpdate(
       user._id,
       {
@@ -39,9 +40,9 @@ export const sendMail = async (user: UserDocumentType, mailType: mailType) => {
         <p> 
         Enter this verification Code to ${mailType === "VERIFY" ? "Verify your Email" : "Reset Your Password"}
         <br>
-        <bold> Verification Code </bold> : ${verificationCode}
+        <strong> Verification Code </strong> : ${verificationCode}
         <br>
-        <bold><em> This code will expire in 1 hour! </em></bold>
+        <strong><em> This code will expire in 1 hour! </em></strong>
         </p>
         `;
 

@@ -1,9 +1,3 @@
-/* 
- - register User:
-    - Get username, fistName, lastName, password, email, avatar link
-    - Validate username is unique, verify email; first check if email already exists; then check if email is legit by sending a magic link.
-    - After all the validations and checks create a new user and save; create access and refresh token for them; save new user in DB;and at last return a 201 with new user data (username, firstName,lastName,avatar link)
-*/
 import { User, UserDocumentType } from "@readium/database/user.model";
 import { CustomApiResponse } from "@readium/utils/customApiResponse";
 import { CustomError } from "@readium/utils/customError";
@@ -15,7 +9,6 @@ import { Request, Response } from "express";
 import { z } from "zod/v4";
 import { sendMail } from "../helper/sendMail.helper";
 import { verifyEmail } from "../helper/verifyEmail.helper";
-import { use } from "passport";
 import { resetPassword } from "../helper/resetPassword.helper";
 import jwt, { JwtPayload } from "jsonwebtoken";
 
@@ -28,18 +21,17 @@ type MixedRequest = CustomRequest & Request;
 export const registerUser = tryCatchWrapper<Request>(
   async (req: Request, res: Response) => {
     const { username, firstName, lastName, password, email } = req.body;
+    const validation = registerUserInputSchema.safeParse({
+      username,
+      firstName,
+      lastName,
+      password,
+      email,
+    });
 
     //TODO: 2. Get avatar image from req.file using multer
 
-    if (
-      !z.safeParse(registerUserInputSchema, {
-        username,
-        firstName,
-        lastName,
-        password,
-        email,
-      }).success
-    ) {
+    if (!validation.success) {
       return res
         .status(400)
         .json(new CustomError(400, "Send Correct User fields!"));
@@ -65,14 +57,18 @@ export const registerUser = tryCatchWrapper<Request>(
       password,
     });
 
-    //TODO: 6. Send magic link / verification code to verify email of user, and toggle isVerified === true
-
     const mailResponse = await sendMail(newUser, "VERIFY");
     console.log(mailResponse);
-
-    // if (!newUser.isVerified) {
-    //   return res.status(401).json(new CustomError(401, "Verify Email First!"));
-    // }
+    if (!mailResponse?.response) {
+      return res
+        .status(500)
+        .json(
+          new CustomError(
+            500,
+            "Error Occurred while  Sending Mail! To Verify user Email!"
+          )
+        );
+    }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
       newUser.username
@@ -100,8 +96,16 @@ export const loginUser = tryCatchWrapper<Request>(
     const { username, email, password } = req.body;
 
     //TODO: 2. Do input validation of received object in req.body using z.safeParse()
+    const validation = loginUserInputSchema.safeParse({
+      username,
+      email,
+      password,
+    });
 
-    if (!z.safeParse(loginUserInputSchema, { username, email, password })) {
+    if (!validation.success) {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Send Correct User fields!"));
     }
 
     //3. Find if unique user exists and if don't send 404 error
@@ -168,7 +172,7 @@ export const loginViaGoogleHandler = tryCatchWrapper<CustomRequest>(
   }
 );
 
-//TODO: Add Input Validation in verifyEmailHandler and resetPasswordHandler controller.
+//TODO: Add Input Validation in verifyEmailHandler, forgotPasswordHanlder and resetPasswordHandler controller.
 
 export const verifyEmailHandler = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
@@ -183,18 +187,60 @@ export const verifyEmailHandler = tryCatchWrapper<CustomRequest>(
     //isVerified is false it means either verification code is wrong or user has exceeded verification code expiry
     //In this case again send verification code
     const mailResponse = await sendMail(req.user!, "VERIFY");
+    if (!mailResponse?.response) {
+      return res
+        .status(500)
+        .json(
+          new CustomError(
+            500,
+            "Error Occurred while Again Sending Mail! to verify Email!"
+          )
+        );
+    }
     return res
-      .status(200)
-      .json(
-        new CustomApiResponse(400, "Invalid Verification Code Send! Retry!")
-      );
+      .status(400)
+      .json(new CustomError(400, "Invalid Verification Code Send! Retry!"));
   }
 );
 
 //TODO: Edge Case Test try to hit this end point and other endpoints with google login and see what happens
+
+//TODO: Add Rate limit to end points especially to those which send email!
+export const forgotPasswordHandler = tryCatchWrapper<CustomRequest>(
+  async (req: CustomRequest, res: Response) => {
+    const { username, email } = req.body;
+    // 1. find if user exists with username or email
+    const user = await User.findOne({
+      $and: [{ username }, { email }],
+    });
+    if (!user) {
+      return res.status(400).json("Invalid username or email!");
+    }
+    //2. send verification token on user's email
+    const mailResponse = await sendMail(user, "RESET");
+    console.log(mailResponse);
+    if (!mailResponse?.response) {
+      return res
+        .status(500)
+        .json(
+          new CustomError(500, "Error While Sending Email To Reset Password!")
+        );
+    }
+    return res
+      .status(200)
+      .json(
+        new CustomApiResponse(
+          200,
+          {},
+          "Mail to Reset Password Sent Successfully!"
+        )
+      );
+  }
+);
+
 export const resetPasswordHandler = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
-    const { oldPassword, verificationCode, newPassword } = req.body;
+    const { oldPassword, newPassword, verificationCode } = req.body;
     //1. check if password sent is correct.
     const user = await User.findById(req.user?._id);
     if (!user) {
@@ -204,17 +250,22 @@ export const resetPasswordHandler = tryCatchWrapper<CustomRequest>(
     if (!isValidPassword) {
       return res.status(400).json(new CustomError(400, "Invalid Password"));
     }
-    //2. send mail with verification code to reset password
-    const mailResponse = await sendMail(user, "RESET");
-    //3. reset password
-    const isPasswordReset = await resetPassword(
-      user,
-      newPassword,
-      verificationCode
-    );
+    //2. reset password
+    const isPasswordReset = await resetPassword(newPassword, verificationCode);
     if (!isPasswordReset) {
       // it means verification code sent is incorrect, send another for retry.
-      await sendMail(user, "RESET");
+      //TODO: Add rate limit
+      const mailResponse = await sendMail(user, "RESET");
+      if (!mailResponse?.response) {
+        return res
+          .status(500)
+          .json(
+            new CustomError(
+              500,
+              "Error Occurred while Again Sending Mail! to reset password"
+            )
+          );
+      }
       return res
         .status(400)
         .json(
@@ -238,15 +289,16 @@ export const LogoutHandler = tryCatchWrapper<MixedRequest>(
         .status(200)
         .json(new CustomApiResponse(200, {}, "User Logged Out Successfully!"));
     } else {
-      await User.findByIdAndUpdate(
+      const updatedUser = await User.findByIdAndUpdate(
         req.user?._id,
         {
           $set: {
-            refreshToken: undefined,
+            refreshToken: "", //mongoose does not let us store undefined, so instead do ""
           },
         },
         { new: true }
       );
+      console.log(updatedUser);
       const options = {
         httpOnly: true,
         secure: true,
@@ -282,6 +334,8 @@ export const refershAccessTokenHandler = tryCatchWrapper<CustomRequest>(
       const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
         user.username
       );
+      user.refreshToken = refreshToken;
+      await user.save({ validateModifiedOnly: true });
       const options = {
         httpOnly: true,
         secure: true,

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  forgotPasswordHandler,
   loginUser,
   loginViaGoogleHandler,
   LogoutHandler,
@@ -25,8 +26,9 @@ router
   .get(passport.authenticate("google"), loginViaGoogleHandler);
 
 router.route("/verify-email").post(isLoggedIn, verifyEmailHandler);
-router.route("forgot-password").post(isLoggedIn, resetPasswordHandler);
-router.route("logout").post(isLoggedIn, LogoutHandler);
-router.route("refresh-token").post(refershAccessTokenHandler); //doesn't require isLoggedIn as we are doing jwt.verify inside controller
+router.route("/forgot-password").post(isLoggedIn, forgotPasswordHandler);
+router.route("/reset-password").patch(isLoggedIn, resetPasswordHandler);
+router.route("/logout").post(isLoggedIn, LogoutHandler);
+router.route("/refresh-token").post(refershAccessTokenHandler); //doesn't require isLoggedIn as we are doing jwt.verify inside controller
 
 export { router };

@@ -1,17 +1,13 @@
-import { User, UserDocumentType } from "@readium/database/user.model";
+import { User } from "@readium/database/user.model";
 
 export const resetPassword = async (
-  user: UserDocumentType,
   newPassword: string,
   verificationCode: string
 ): Promise<boolean | undefined> => {
   try {
     //1. verify verification code
     const validUser = await User.findOne({
-      $and: [
-        { verificationCode },
-        { verificationExpiry: { $gt: user.verificationExpiry } },
-      ],
+      $and: [{ verificationCode }, { verificationExpiry: { $gt: Date.now() } }],
     });
     if (!validUser) {
       // it means verification code sent is invalid return false
@@ -20,7 +16,7 @@ export const resetPassword = async (
     validUser.password = newPassword;
     validUser.verificationCode = undefined;
     validUser.verificationExpiry = undefined;
-    await validUser.save({ validateBeforeSave: false });
+    await validUser.save();
     console.log(validUser.isPasswordCorrect(newPassword));
     return true;
   } catch (error) {

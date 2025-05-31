@@ -25,9 +25,9 @@ export const verifyEmail = async (
     });
     if (validUser) {
       validUser.isVerified = true;
-      validUser.verificationCode = undefined;
+      validUser.verificationCode = undefined; //setting a field like this to undefined will remove this from document.
       validUser.verificationExpiry = undefined;
-      await validUser.save({ validateBeforeSave: false });
+      await validUser.save({ validateModifiedOnly: true }); // Can't use {validateBeforeSave:false}, because using this doesn't change anything for these fields as
       return validUser.isVerified;
     }
     return false;
