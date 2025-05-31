@@ -173,7 +173,8 @@ export const loginViaGoogleHandler = tryCatchWrapper<CustomRequest>(
 export const verifyEmailHandler = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { verificationCode } = req.body;
-    const isVerified = await verifyEmail(req.user!, verificationCode);
+    const isVerified = await verifyEmail(verificationCode);
+    console.log(isVerified);
     if (isVerified) {
       return res
         .status(200)

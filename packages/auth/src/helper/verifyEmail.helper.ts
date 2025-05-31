@@ -12,7 +12,6 @@
 import { User, UserDocumentType } from "@readium/database/user.model";
 
 export const verifyEmail = async (
-  user: UserDocumentType,
   verificationCode: string
 ): Promise<boolean | undefined> => {
   try {
@@ -20,7 +19,7 @@ export const verifyEmail = async (
       $and: [
         { verificationCode },
         {
-          verificationExpiry: { $gt: user.verificationExpiry },
+          verificationExpiry: { $gt: Date.now() },
         },
       ],
     });

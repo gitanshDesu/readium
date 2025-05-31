@@ -26,7 +26,7 @@ interface IUser {
   blogHistory: Array<IBlogHistory>;
   refreshToken: string | undefined;
   verificationCode?: string | undefined;
-  verificationExpiry?: Date | undefined;
+  verificationExpiry?: number | undefined;
   createdAt: NativeDate;
   updatedAt: NativeDate;
 }
@@ -104,7 +104,7 @@ const userSchema = new mongoose.Schema<IUser, Model<IUser>, UserMethods>(
       default: undefined,
     },
     verificationExpiry: {
-      type: Date,
+      type: Number,
       default: undefined,
     },
   },
