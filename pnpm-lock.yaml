@@ -133,9 +133,6 @@ importers:
       passport-google-oidc:
         specifier: ^0.1.0
         version: 0.1.0
-      zod:
-        specifier: ^3.25.7
-        version: 3.25.7
     devDependencies:
       '@readium/types':
         specifier: workspace:*

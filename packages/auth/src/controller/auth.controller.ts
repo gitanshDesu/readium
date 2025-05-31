@@ -6,7 +6,6 @@ import { generateAccessAndRefreshToken } from "@readium/utils/generateTokens";
 import { registerUserInputSchema } from "@readium/zod/registerUser";
 import { loginUserInputSchema } from "@readium/zod/loginUser";
 import { Request, Response } from "express";
-import { z } from "zod/v4";
 import { sendMail } from "../helper/sendMail.helper";
 import { verifyEmail } from "../helper/verifyEmail.helper";
 import { resetPassword } from "../helper/resetPassword.helper";
@@ -96,6 +95,7 @@ export const loginUser = tryCatchWrapper<Request>(
     const { username, email, password } = req.body;
 
     //TODO: 2. Do input validation of received object in req.body using z.safeParse()
+    console.log(loginUserInputSchema);
     const validation = loginUserInputSchema.safeParse({
       username,
       email,

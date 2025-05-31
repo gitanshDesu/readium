@@ -12,13 +12,13 @@
         },
         "./loginUser":{
             "types":"./src/loginUser.ts",
-            "default":"./dist/registerUser.js"
+            "default":"./dist/loginUser.js"
         }
     },
     "scripts": {
         "lint": "eslint --max-warning 0",
         "check-types": "tsc --noEmit",
-        "build":"tsc - --watch"
+        "build":"tsc -b --watch"
     },
     "devDependencies": {
         "@readium/typescript-config": "workspace:*",
