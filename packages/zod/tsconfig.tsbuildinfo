@@ -1,1 +1,1 @@
-{"root":["./src/loginUser.ts","./src/registerUser.ts"],"version":"5.8.3"}
+{"root":["./src/forgotPassword.ts","./src/loginUser.ts","./src/registerUser.ts","./src/resetPassword.ts","./src/verfiyEmail.ts"],"version":"5.8.3"}

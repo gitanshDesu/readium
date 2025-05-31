@@ -13,6 +13,18 @@
         "./loginUser":{
             "types":"./src/loginUser.ts",
             "default":"./dist/loginUser.js"
+        },
+        "./verifyEmail":{
+            "types":"./src/verfiyEmail.ts",
+            "default":"./dist/verfiyEmail.js"
+        },
+        "./forgotPassword":{
+            "types":"./src/forgotPassword.ts",
+            "default":"./dist/forgotPassword.js"
+        },
+        "./resetPassword":{
+            "types":"./src/resetPassword.ts",
+            "default":"./dist/resetPassword.js"
         }
     },
     "scripts": {

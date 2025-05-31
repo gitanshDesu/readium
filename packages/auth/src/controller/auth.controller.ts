@@ -5,6 +5,9 @@ import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { generateAccessAndRefreshToken } from "@readium/utils/generateTokens";
 import { registerUserInputSchema } from "@readium/zod/registerUser";
 import { loginUserInputSchema } from "@readium/zod/loginUser";
+import { resetPasswordInputSchema } from "@readium/zod/resetPassword";
+import { forgotPasswordInputSchema } from "@readium/zod/forgotPassword";
+import { verifyEmailInputSchema } from "@readium/zod/verifyEmail";
 import { Request, Response } from "express";
 import { sendMail } from "../helper/sendMail.helper";
 import { verifyEmail } from "../helper/verifyEmail.helper";
@@ -57,7 +60,6 @@ export const registerUser = tryCatchWrapper<Request>(
     });
 
     const mailResponse = await sendMail(newUser, "VERIFY");
-    console.log(mailResponse);
     if (!mailResponse?.response) {
       return res
         .status(500)
@@ -94,8 +96,6 @@ export const loginUser = tryCatchWrapper<Request>(
     //1. get username, email, password from req.body
     const { username, email, password } = req.body;
 
-    //TODO: 2. Do input validation of received object in req.body using z.safeParse()
-    console.log(loginUserInputSchema);
     const validation = loginUserInputSchema.safeParse({
       username,
       email,
@@ -125,6 +125,16 @@ export const loginUser = tryCatchWrapper<Request>(
     if (!existingUser.isVerified) {
       // Send Mail on user's email with verification code
       const mailResponse = await sendMail(existingUser, "VERIFY");
+      if (!mailResponse?.response) {
+        return res
+          .status(500)
+          .json(
+            new CustomError(
+              500,
+              "Error Occurred while  Sending Mail! To Verify user Email!"
+            )
+          );
+      }
       return res
         .status(401)
         .json(
@@ -149,7 +159,7 @@ export const loginUser = tryCatchWrapper<Request>(
     );
 
     existingUser.refreshToken = refreshToken;
-    await existingUser.save({ validateBeforeSave: true });
+    await existingUser.save({ validateBeforeSave: false });
 
     //7. set cookies for access token and refersh token and send 200 response
     const options = {
@@ -172,11 +182,15 @@ export const loginViaGoogleHandler = tryCatchWrapper<CustomRequest>(
   }
 );
 
-//TODO: Add Input Validation in verifyEmailHandler, forgotPasswordHanlder and resetPasswordHandler controller.
-
 export const verifyEmailHandler = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { verificationCode } = req.body;
+    const validation = verifyEmailInputSchema.safeParse({ verificationCode });
+    if (!validation.success) {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Send Correct Verify Email Fields!"));
+    }
     const isVerified = await verifyEmail(verificationCode);
     console.log(isVerified);
     if (isVerified) {
@@ -209,6 +223,12 @@ export const verifyEmailHandler = tryCatchWrapper<CustomRequest>(
 export const forgotPasswordHandler = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { username, email } = req.body;
+    const validation = forgotPasswordInputSchema.safeParse({ username, email });
+    if (!validation.success) {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Send Correct Forgot Password Fields!"));
+    }
     // 1. find if user exists with username or email
     const user = await User.findOne({
       $and: [{ username }, { email }],
@@ -241,6 +261,16 @@ export const forgotPasswordHandler = tryCatchWrapper<CustomRequest>(
 export const resetPasswordHandler = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { oldPassword, newPassword, verificationCode } = req.body;
+    const validation = resetPasswordInputSchema.safeParse({
+      oldPassword,
+      newPassword,
+      verificationCode,
+    });
+    if (!validation.success) {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Send Correct Reset Password Fields!"));
+    }
     //1. check if password sent is correct.
     const user = await User.findById(req.user?._id);
     if (!user) {
