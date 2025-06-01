@@ -3,45 +3,45 @@
   "version": "1.0.0",
   "private": "true",
   "exports": {
-    ".":{
-      "types":"./src/index.ts",
-      "default":"./dist/index.js"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
     },
-    "./user.model":{
-      "types":"./src/models/user.model.ts",
-      "default":"./dist/models/user.model.js"
+    "./user.model": {
+      "types": "./src/models/user.model.ts",
+      "default": "./dist/models/user.model.js"
     },
-    "./blog.model":{
-      "types":"./src/models/blog.model.ts",
-      "default":"./dist/models/blog.model.js"
+    "./blog.model": {
+      "types": "./src/models/blog.model.ts",
+      "default": "./dist/models/blog.model.js"
     },
-    "./comment.model":{
-      "types":"./src/models/comment.model.ts",
-      "default":"./dist/models/comment.model.js"
+    "./comment.model": {
+      "types": "./src/models/comment.model.ts",
+      "default": "./dist/models/comment.model.js"
     },
-    "./following.model":{
-      "types":"./src/models/following.model.ts",
-      "default":"./dist/models/following.model.js"
+    "./following.model": {
+      "types": "./src/models/following.model.ts",
+      "default": "./dist/models/following.model.js"
     },
-    "./image.model":{
-      "types":"./src/models/image.model.ts",
-      "default":"./dist/models/image.model.js"
+    "./image.model": {
+      "types": "./src/models/image.model.ts",
+      "default": "./dist/models/image.model.js"
     },
-    "./like.model":{
-      "types":"./src/models/like.model.ts",
-      "default":"./dist/models/like.model.js"
+    "./like.model": {
+      "types": "./src/models/like.model.ts",
+      "default": "./dist/models/like.model.js"
     },
-    "./reply.model":{
-      "types":"./src/models/reply.model.ts",
-      "default":"./dist/models/reply.model.js"
+    "./reply.model": {
+      "types": "./src/models/reply.model.ts",
+      "default": "./dist/models/reply.model.js"
     },
-    "./tag.model":{
-      "types":"./src/models/tag.model.ts",
-      "default":"./dist/models/tag.model.js"
+    "./tag.model": {
+      "types": "./src/models/tag.model.ts",
+      "default": "./dist/models/tag.model.js"
     },
-    "./video.model":{
-      "types":"./src/models/video.model.ts",
-      "default":"./dist/models/video.model.js"
+    "./video.model": {
+      "types": "./src/models/video.model.ts",
+      "default": "./dist/models/video.model.js"
     }
   },
   "scripts": {
@@ -50,8 +50,8 @@
     "build": "tsc -b --watch"
   },
   "devDependencies": {
+    "@readium/types": "workspace:*",
     "@readium/typescript-config": "workspace:*",
-    "@readium/types":"workspace:*",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.3",
     "typescript": "^5.8.3"
@@ -64,6 +64,7 @@
     "bcryptjs": "^3.0.2",
     "dotenv": "^16.5.0",
     "jsonwebtoken": "^9.0.2",
+    "mongoose-aggregate-paginate-v2": "^1.1.4",
     "mongoose": "^8.14.2"
   }
 }

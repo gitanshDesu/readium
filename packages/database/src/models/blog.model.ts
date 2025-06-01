@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const blogAssetsSchema = new mongoose.Schema({
   images: [
@@ -54,5 +55,7 @@ const blogSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+blogSchema.plugin(mongooseAggregatePaginate);
 
 export const Blog = mongoose.model("Blog", blogSchema);
