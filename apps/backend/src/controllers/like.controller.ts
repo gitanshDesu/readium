@@ -6,17 +6,17 @@ interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
 }
 
-// Follow and Unfollow a User
-export const ToggleFollow = tryCatchWrapper<CustomRequest>(
+//toggle blog like
+export const toggleBlogLike = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {}
 );
 
-// Get all the followers of a user
-export const getAllFollowers = tryCatchWrapper<CustomRequest>(
+//toggle comment like
+export const toggleCommentLike = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {}
 );
 
-//Get all the users a user is following
-export const getFollowedUsers = tryCatchWrapper<CustomRequest>(
+//toggle reply like
+export const toggleReplyLike = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {}
 );

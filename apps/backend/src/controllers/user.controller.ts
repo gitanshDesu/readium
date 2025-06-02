@@ -33,27 +33,6 @@ export const getAllUserBlogs = tryCatchWrapper<CustomRequest>(
   }
 );
 
-//TODO: Should be in dashboard controller - as using this end point we can get data to create user dashboard
-export const getAnotherUserProfile = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response) => {
-    const { userId } = req.query;
-    //1. check if userId sent is ValidObjectId or not
-    if (!isValidObjectId(userId)) {
-      return res
-        .status(400)
-        .json(new CustomError(400, "Send Valid Object Id!"));
-    }
-    //2. Find if the user exists
-    const existingUser = await User.findById(userId);
-    if (!existingUser) {
-      return res.status(404).json(new CustomError(404, "User Doesn't Exist!"));
-    }
-    //3. Get User details - firstName lastName username email avatar, Get User Blogs, Get User Total Followers, Total No. of People they're following
-
-    //4. Return recent blogs (display blog in descending order (neweset first)) and popular(find by Views > Threshold && Likes > Threshold ) blogs (P.S we have to write some kind of algo to seggregate popular blogs from) by User
-  }
-);
-
 export const updateAccountDetails = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { NewFirstName, NewLastName, NewUsername, OldUsername } = req.body;
@@ -140,4 +119,12 @@ export const deleteUserAccount = tryCatchWrapper<CustomRequest>(
         new CustomApiResponse(200, deletedUser, "User Deleted Successfully!")
       );
   }
+);
+
+export const getUserBookmarks = tryCatchWrapper<CustomRequest>(
+  async (req: CustomRequest, res: Response) => {}
+);
+
+export const getUserBlogHistory = tryCatchWrapper<CustomRequest>(
+  async (req: CustomRequest, res: Response) => {}
 );

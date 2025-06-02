@@ -173,6 +173,9 @@ importers:
       mongoose:
         specifier: ^8.14.2
         version: 8.14.2(socks@2.8.4)
+      mongoose-aggregate-paginate-v2:
+        specifier: ^1.1.4
+        version: 1.1.4
     devDependencies:
       '@readium/types':
         specifier: workspace:*
@@ -1887,6 +1890,10 @@ packages:
         optional: true
       socks:
         optional: true
+
+  mongoose-aggregate-paginate-v2@1.1.4:
+    resolution: {integrity: sha512-CdQIar3wlS7g0H6JjSJIZzvzz05vFc+Xy9SosJmj46l3xIomgl3ZjDn/n4vDpEei9RBawgUk5zGTIP6fMKdMdA==}
+    engines: {node: '>=4.0.0'}
 
   mongoose@8.14.2:
     resolution: {integrity: sha512-LPLZiN6M8ap4GlXmaaG7yrHIkK45dSO3NZ0qgERJl2CfcL5eP7MA9umn4zGhKiWkMLbnHM4jhebIYbUhvuwWvQ==}
@@ -4497,6 +4504,8 @@ snapshots:
       mongodb-connection-string-url: 3.0.2
     optionalDependencies:
       socks: 2.8.4
+
+  mongoose-aggregate-paginate-v2@1.1.4: {}
 
   mongoose@8.14.2(socks@2.8.4):
     dependencies:
