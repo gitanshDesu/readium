@@ -1,5 +1,29 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument, InferSchemaType, Model } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+
+type IBlogAsset = {
+  images: Array<mongoose.Types.ObjectId>;
+  videos: Array<mongoose.Types.ObjectId>;
+  tags: Array<mongoose.Types.ObjectId>;
+};
+interface IBlog {
+  title: string;
+  content: string;
+  slug: string;
+  author: mongoose.Types.ObjectId;
+  thumbnail: string;
+  blogAssets: IBlogAsset;
+  views: number;
+  wordCount: number;
+  readTime: number;
+  createdAt: NativeDate;
+  updatedAt: NativeDate;
+}
+
+interface BlogMethods {
+  slugifyTitle: (title: string) => string;
+  generateUniqueSlug: (userId: mongoose.Types.ObjectId, slug: string) => string;
+}
 
 const blogAssetsSchema = new mongoose.Schema({
   images: [
@@ -22,7 +46,7 @@ const blogAssetsSchema = new mongoose.Schema({
   ],
 });
 
-const blogSchema = new mongoose.Schema(
+const blogSchema = new mongoose.Schema<IBlog, Model<IBlog>, BlogMethods>(
   {
     title: {
       type: String,
@@ -31,6 +55,12 @@ const blogSchema = new mongoose.Schema(
     content: {
       type: String,
       required: true,
+    },
+    slug: {
+      // so that we can have unqiue URLs for each blog(even with blogs with duplicate title)
+      type: String,
+      required: true,
+      unique: true,
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
@@ -55,6 +85,22 @@ const blogSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+blogSchema.methods.slugifyTitle = (title: string) => {
+  const slug = title.toLowerCase().replace(" ", "-");
+  return slug;
+};
+
+blogSchema.methods.generateUniqueSlug = (
+  userId: mongoose.Types.ObjectId,
+  slug: string
+) => {
+  const uniqueSlug = slug.concat("-", userId.toString());
+  return uniqueSlug;
+};
+
+type SchemaType = InferSchemaType<typeof blogSchema>;
+
+export type BlogDocumentType = HydratedDocument<SchemaType>;
 
 blogSchema.plugin(mongooseAggregatePaginate);
 
