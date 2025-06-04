@@ -13,6 +13,8 @@ import { sendMail } from "../helper/sendMail.helper";
 import { verifyEmail } from "../helper/verifyEmail.helper";
 import { resetPassword } from "../helper/resetPassword.helper";
 import jwt, { JwtPayload } from "jsonwebtoken";
+import path from "path";
+import { uploadToS3, getUrlFromS3 } from "@readium/utils/s3";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
@@ -32,6 +34,25 @@ export const registerUser = tryCatchWrapper<Request>(
     });
 
     //TODO: 2. Get avatar image from req.file using multer
+    const avatarFileName = req.file?.filename!;
+    if (!avatarFileName) {
+      throw new CustomError(400, "Avatar file is missing!");
+    }
+
+    const key = avatarFileName + path.extname(req.file?.originalname!);
+
+    const response = await uploadToS3(
+      key,
+      req.file?.path!,
+      req.file?.mimetype!
+    );
+    if (!response) {
+      throw new CustomError(500, "Error Occurred While Uploading Avatar");
+    }
+    const avatarUrl = await getUrlFromS3(key);
+    if (!avatarUrl) {
+      throw new CustomError(500, "Error occurred while getting Pre-Signed URL");
+    }
 
     if (!validation.success) {
       return res
@@ -58,6 +79,9 @@ export const registerUser = tryCatchWrapper<Request>(
       email,
       password,
     });
+    //Set avatar in DB
+    newUser.avatar! = avatarUrl;
+    await newUser.save({ validateModifiedOnly: true });
 
     const mailResponse = await sendMail(newUser, "VERIFY");
     if (!mailResponse?.response) {

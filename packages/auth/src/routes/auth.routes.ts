@@ -11,10 +11,10 @@ import {
 } from "../controller/auth.controller";
 import passport from "../config/passport.config";
 import { isLoggedIn } from "../middleware/auth.middleware";
-
+import { upload } from "@readium/middleware/multer";
 const router: Router = Router();
-
-router.route("/register").post(registerUser);
+console.log("test in auth.route");
+router.route("/register").post(upload.single("avatar"), registerUser);
 router.route("/login").post(loginUser);
 router.route("/login/google").get(
   passport.authenticate("google", {

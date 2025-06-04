@@ -21,6 +21,10 @@ declare global {
       COOKIE_SESSION_KEY: string;
       ETHEREAL_USER: string;
       ETHEREAL_PASS: string;
+      BUCKET_NAME: string;
+      BUCKET_REGION: string;
+      ACCESS_KEY: string;
+      SECRET_ACCESS_KEY: string;
     }
   }
 }

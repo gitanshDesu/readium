@@ -3,25 +3,29 @@
     "version": "1.0.0",
     "private": "true",
     "exports": {
-        ".":{
-            "types":"./src/index.ts",
-            "default":"./dist/index.js"
+        ".": {
+            "types": "./src/index.ts",
+            "default": "./dist/index.js"
         },
         "./tryCatchWrapper": {
             "types": "./src/tryCatchWrapper.util.ts",
             "default": "./dist/tryCatchWrapper.util.js"
         },
-        "./customError":{
-            "types":"./src/customError.util.ts",
-            "default":"./dist/customError.util.js"
+        "./customError": {
+            "types": "./src/customError.util.ts",
+            "default": "./dist/customError.util.js"
         },
-        "./customApiResponse":{
-            "types":"./src/customApiResponse.util.ts",
-            "default":"./dist/customApiResponse.util.js"
+        "./customApiResponse": {
+            "types": "./src/customApiResponse.util.ts",
+            "default": "./dist/customApiResponse.util.js"
         },
-        "./generateTokens":{
-            "types":"./src/generateTokens.util.ts",
-            "default":"./dist/generateTokens.util.js"
+        "./generateTokens": {
+            "types": "./src/generateTokens.util.ts",
+            "default": "./dist/generateTokens.util.js"
+        },
+        "./s3":{
+            "types":"./src/s3.util.ts",
+            "default":"./dist/s3.util.js"
         }
     },
     "scripts": {
@@ -30,9 +34,9 @@
         "build": "tsc -b --watch"
     },
     "devDependencies": {
+        "@readium/database": "workspace:*",
+        "@readium/types": "workspace:*",
         "@readium/typescript-config": "workspace:*",
-        "@readium/types":"workspace:*",
-        "@readium/database":"workspace:*",
         "@types/express": "^5.0.1",
         "@types/node": "^22.15.3",
         "typescript": "^5.8.3"
@@ -42,7 +46,9 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
-        "express": "^5.1.0",
-        "@readium/database":"workspace:*"
+        "@aws-sdk/client-s3": "^3.823.0",
+        "@aws-sdk/s3-request-presigner": "^3.823.0",
+        "dotenv": "^16.5.0",
+        "express": "^5.1.0"
     }
 }
