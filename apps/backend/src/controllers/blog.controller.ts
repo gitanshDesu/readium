@@ -206,7 +206,27 @@ export const updateBlog = tryCatchWrapper<CustomRequest>(
 
 //Delete a blog using a id (only a blog authored by user can be deleted)
 export const deleteBlog = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response) => {}
+  async (req: CustomRequest, res: Response) => {
+    const { blogId } = req.params;
+    if (!isValidObjectId(blogId)) {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Send Valid Object Id!"));
+    }
+    const existingBlog = await Blog.findOne({
+      $and: [{ _id: blogId }, { author: req.user?._id }],
+    });
+    if (!existingBlog) {
+      return res.status(404).json(new CustomError(404, "Blog Doesn't Exist!"));
+    }
+    //TODO: Add post middleware on findByIdAndDelete Query to delete all related images and videos from images and videos collection after blog gets deleted (just like Delete on cascade)
+    const deletedBlog = await Blog.findByIdAndDelete(existingBlog._id);
+    return res
+      .status(200)
+      .json(
+        new CustomApiResponse(200, deletedBlog, "Blog Deleted Successfully!")
+      );
+  }
 );
 
 export const toggleBookMark = tryCatchWrapper<CustomRequest>(
