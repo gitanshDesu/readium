@@ -5,6 +5,8 @@ import { CustomError } from "@readium/utils/customError";
 import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { Response, Request } from "express";
 import { isValidObjectId } from "mongoose";
+import path from "node:path";
+import { deleteFromS3, getUrlFromS3, uploadToS3 } from "@readium/utils/s3";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
@@ -86,9 +88,38 @@ export const updateAccountDetails = tryCatchWrapper<CustomRequest>(
 export const updateAvatar = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     //1. Get new Avatar link from req.file (comes from multer)
+    const avatarFileName = req.file?.filename;
+    if (!avatarFileName) {
+      throw new CustomError(400, "Avatar File is Missing!");
+    }
     //2. Upload the avatar to cloudinary / S3
-    //TODO: Study about pre-signed S3 objects or whatever is the right term. where we get already uploaded images on S3 link from client.
+    const key = avatarFileName + path.extname(req.file?.originalname!);
+    //2.1 Delete old image from S3
+    const oldAvatarUrl = req.user?.avatar;
+    const oldKey = oldAvatarUrl?.split("?")[0]?.split("/")[3]!;
+    const response = await deleteFromS3(oldKey);
+    if (!response) {
+      throw new CustomError(500, "Error Occurred While Deleting Old Avatar!");
+    }
+    //2.2 Upload new avatar on S3 and get pre-signed URL
+    const uploadResponse = await uploadToS3(
+      key,
+      req.file?.path!,
+      req.file?.mimetype!
+    );
+    if (!uploadResponse) {
+      throw new CustomError(500, "Error Occurred while uploading new Avatar!");
+    }
+    const newAvatarUrl = await getUrlFromS3(key);
+    if (!newAvatarUrl) {
+      throw new CustomError(500, "Error Occurred while getting Avatar URL!");
+    }
+
+    //TODO: Study about pre-signed S3 objects URLs or whatever is the right term. where we get already uploaded images on S3 link from client.
+
     //3. Update the avatar path in DB.
+    req.user!.avatar = newAvatarUrl;
+    req.user?.save({ validateModifiedOnly: true });
   }
 );
 

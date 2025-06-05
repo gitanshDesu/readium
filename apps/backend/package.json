@@ -8,16 +8,17 @@
 		"dev": "npm run build && npm run start"
 	},
 	"devDependencies": {
-		"@readium/types": "workspace:*",
-		"@readium/typescript-config": "workspace:*",
 		"@readium/auth": "workspace:*",
 		"@readium/database": "workspace:*",
+		"@readium/middleware": "workspace:*",
+		"@readium/types": "workspace:*",
+		"@readium/typescript-config": "workspace:*",
 		"@readium/utils": "workspace:*",
-		"@readium/middleware":"workspace:*",
 		"@types/cookie-parser": "^1.4.8",
 		"@types/cookie-session": "^2.0.49",
 		"@types/cors": "^2.8.18",
 		"@types/express": "^5.0.1",
+		"@types/node": "^22.15.3",
 		"typescript": "^5.8.3"
 	},
 	"keywords": [],

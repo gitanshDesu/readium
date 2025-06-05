@@ -66,6 +66,9 @@ importers:
       '@types/express':
         specifier: ^5.0.1
         version: 5.0.1
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.15.3
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
