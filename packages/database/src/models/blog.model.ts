@@ -98,6 +98,17 @@ blogSchema.methods.generateUniqueSlug = (
   return uniqueSlug;
 };
 
+//create slug pre-save using pre-save middleware
+blogSchema.pre("save", function (next) {
+  if (!this.isModified("title")) {
+    return next();
+  }
+  const slugifyTitle = this.slugifyTitle(this.title);
+  const slug = this.generateUniqueSlug(this._id, slugifyTitle);
+  this.slug = slug;
+  next();
+});
+
 type SchemaType = InferSchemaType<typeof blogSchema>;
 
 export type BlogDocumentType = HydratedDocument<SchemaType>;

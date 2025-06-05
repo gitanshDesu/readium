@@ -120,6 +120,15 @@ export const updateAvatar = tryCatchWrapper<CustomRequest>(
     //3. Update the avatar path in DB.
     req.user!.avatar = newAvatarUrl;
     req.user?.save({ validateModifiedOnly: true });
+    return res
+      .status(200)
+      .json(
+        new CustomApiResponse(
+          200,
+          { newAvatarUrl },
+          "Avatar Updated Successfully!"
+        )
+      );
   }
 );
 
@@ -153,7 +162,31 @@ export const deleteUserAccount = tryCatchWrapper<CustomRequest>(
 );
 
 export const getUserBookmarks = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response) => {}
+  async (req: CustomRequest, res: Response) => {
+    if (req.user?.bookmarks.length === 0) {
+      return res
+        .status(404)
+        .json(new CustomError(404, "Bookmarks Doesn't Exist!"));
+    }
+    const bookmarks = req.user?.bookmarks.map(
+      async (blogId) =>
+        await Blog.findById(blogId)
+          .populate(
+            "author",
+            "-password -bookmarks -blogHistory -refreshToken -googleId -provider"
+          )
+          .populate("tags", "-createdBy")
+    );
+    return res
+      .status(200)
+      .json(
+        new CustomApiResponse(
+          200,
+          { bookmarks },
+          "User Bookmarks Fetched Successfully!"
+        )
+      );
+  }
 );
 
 export const getUserBlogHistory = tryCatchWrapper<CustomRequest>(
