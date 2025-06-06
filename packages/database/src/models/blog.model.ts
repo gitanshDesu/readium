@@ -12,6 +12,7 @@ interface IBlog {
   title: string;
   content: string;
   slug: string;
+  isPublished: boolean;
   author: mongoose.Types.ObjectId;
   thumbnail: string;
   blogAssets: IBlogAsset;
@@ -63,6 +64,10 @@ const blogSchema = new mongoose.Schema<IBlog, Model<IBlog>, BlogMethods>(
       type: String,
       required: true,
       unique: true,
+    },
+    isPublished: {
+      type: Boolean,
+      default: false,
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,

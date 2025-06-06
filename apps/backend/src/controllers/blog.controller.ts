@@ -5,7 +5,7 @@ import { CustomError } from "@readium/utils/customError";
 import { deleteFromS3, getUrlFromS3, uploadToS3 } from "@readium/utils/s3";
 import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { Request, Response } from "express";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import path from "path";
 
 interface CustomRequest extends Request {
@@ -78,9 +78,20 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
   }
 );
 
-//This controller will get all blogs based on search query, filters and sortType, user will also sent page and limit (to paginate data)
+//This controller will get all blogs based on search query, filters, sortBy and sortType, user will also sent page and limit (to paginate data)
 export const getAllBlogs = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response) => {}
+  async (req: CustomRequest, res: Response) => {
+    const {
+      query = "",
+      page = 1,
+      limit = 10,
+      sortBy = "createdAt",
+      sortType = 1,
+      filter = "",
+      userId = "", // used when a user tries to find all the blogs by author === userId
+    } = req.query;
+    //TODO: Add input validation for req.body using zod
+  }
 );
 
 export const getBlogById = tryCatchWrapper<CustomRequest>(
@@ -235,6 +246,79 @@ export const deleteBlog = tryCatchWrapper<CustomRequest>(
 );
 
 export const toggleBookMark = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response) => {}
+  async (req: CustomRequest, res: Response) => {
+    const { blogId } = req.params;
+    if (!isValidObjectId(blogId)) {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Send Valid Object Id!"));
+    }
+    const existingBlog = await Blog.findById(blogId);
+    if (!existingBlog) {
+      return res
+        .status(404)
+        .json(new CustomError(404, "The Blog Doesn't Exist!"));
+    }
+    //Check if the blog is already in bookmarks array if yes then filter out and if no then push
+    const doesBlogExist = req.user?.bookmarks.includes(
+      new mongoose.Types.ObjectId(blogId)
+    );
+    if (!doesBlogExist) {
+      //then push blog into user's bookmarks
+      req.user?.bookmarks.push(new mongoose.Types.ObjectId(blogId));
+      await req.user?.save({ validateModifiedOnly: true });
+      return res
+        .status(200)
+        .json(
+          new CustomApiResponse(
+            200,
+            blogId,
+            "Blog Added To Bookmarks Successfully!"
+          )
+        );
+    }
+    //filter the blog out of the bookmarks array
+    req.user!.bookmarks = req.user!.bookmarks.filter(
+      (id) => !id.equals(blogId)
+    );
+    await req.user?.save({ validateModifiedOnly: true });
+    return res
+      .status(200)
+      .json(
+        new CustomApiResponse(
+          200,
+          blogId,
+          "Blog Removed From Bookmarks Successful!"
+        )
+      );
+  }
 );
 //TODO: Add feature to make blog public or private (by default private btw, we need to add field to Blog schema is published) => TogglePublish
+export const togglePublish = tryCatchWrapper<CustomRequest>(
+  async (req: CustomRequest, res: Response) => {
+    const { blogId } = req.params;
+    if (!isValidObjectId(blogId)) {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Provide Valid Object Id!"));
+    }
+    //make sure req.user is the author (only author of blog can toggle their publish status)
+    const existingBlog = await Blog.findOne({
+      $and: [{ _id: blogId }, { author: req.user?._id }],
+    });
+    if (!existingBlog) {
+      return res.status(404).json(new CustomError(404, "Blog Doesn't Exist!"));
+    }
+    existingBlog.isPublished = !existingBlog.isPublished;
+    await existingBlog.save({ validateModifiedOnly: true });
+    return res
+      .status(200)
+      .json(
+        new CustomApiResponse(
+          200,
+          existingBlog.isPublished,
+          "Blog's Publish Status Toggled successfully!"
+        )
+      );
+  }
+);
