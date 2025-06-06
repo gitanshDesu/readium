@@ -1,5 +1,7 @@
 import mongoose, { HydratedDocument, InferSchemaType, Model } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+import { Image } from "./image.model";
+import { Video } from "./video.model";
 
 type IBlogAsset = {
   images: Array<mongoose.Types.ObjectId>;
@@ -107,6 +109,13 @@ blogSchema.pre("save", function (next) {
   const slug = this.generateUniqueSlug(this._id, slugifyTitle);
   this.slug = slug;
   next();
+});
+
+//delete on cascade when we do blog.findByIdAndDelete()
+blogSchema.post("findOneAndDelete", async function () {
+  const blog = this.getQuery()?._id;
+  await Image.deleteMany({ blog });
+  await Video.deleteMany({ blog });
 });
 
 type SchemaType = InferSchemaType<typeof blogSchema>;

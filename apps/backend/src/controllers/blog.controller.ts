@@ -220,7 +220,12 @@ export const deleteBlog = tryCatchWrapper<CustomRequest>(
       return res.status(404).json(new CustomError(404, "Blog Doesn't Exist!"));
     }
     //TODO: Add post middleware on findByIdAndDelete Query to delete all related images and videos from images and videos collection after blog gets deleted (just like Delete on cascade)
-    const deletedBlog = await Blog.findByIdAndDelete(existingBlog._id);
+    const deletedBlog = await Blog.findOneAndDelete({ _id: existingBlog._id });
+    if (!deleteBlog) {
+      return res
+        .status(500)
+        .json(new CustomError(500, "Error Occurred while deleting blog!"));
+    }
     return res
       .status(200)
       .json(
