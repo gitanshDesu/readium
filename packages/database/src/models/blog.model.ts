@@ -1,4 +1,9 @@
-import mongoose, { HydratedDocument, InferSchemaType, Model } from "mongoose";
+import mongoose, {
+  AggregatePaginateModel,
+  HydratedDocument,
+  InferSchemaType,
+  Model,
+} from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 import { Image } from "./image.model";
 import { Video } from "./video.model";
@@ -129,4 +134,8 @@ export type BlogDocumentType = HydratedDocument<SchemaType>;
 
 blogSchema.plugin(mongooseAggregatePaginate);
 
-export const Blog = mongoose.model("Blog", blogSchema);
+//Need to add type of aggregate paginate plugin on Model to make TS let use methods provided by aggregate paginate plugin on Blog model w/o ts 2339 error.
+export const Blog = mongoose.model<IBlog, AggregatePaginateModel<IBlog>>(
+  "Blog",
+  blogSchema
+);

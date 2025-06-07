@@ -1,4 +1,5 @@
 import { Blog } from "@readium/database/blog.model";
+import { Tag, TagDocumentType } from "@readium/database/tag.model";
 import { UserDocumentType } from "@readium/database/user.model";
 import { CustomApiResponse } from "@readium/utils/customApiResponse";
 import { CustomError } from "@readium/utils/customError";
@@ -11,6 +12,20 @@ import path from "path";
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
 }
+
+const getArrayOfTagIds = async (tags: string[]) => {
+  try {
+    const allTagDocs = await Promise.all(
+      (tags as string[]).map((tagName) => Tag.findOne({ name: tagName }))
+    );
+
+    const allTagsId = allTagDocs.map((tag: TagDocumentType) => tag?._id);
+    return allTagsId;
+  } catch (error) {
+    //TODO: Add Custom Error
+    console.log("Error Occurred while extracting Tag Documents: \n ", error);
+  }
+};
 
 export const createBlog = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
@@ -56,7 +71,6 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
     const newBlog = await Blog.create({
       title,
       content,
-      tags,
       thumbnail: thumbnailUrl,
       author: req.user?._id,
     });
@@ -64,10 +78,13 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
     //TODO: 4. store extracted blog assets (image, videos) with tags in DB
 
     //5. Calculate word count read time - Create util for this
+    const allTagsId = await getArrayOfTagIds(tags);
     const wordCount = newBlog.content.split(" ").length;
     const readTime = wordCount * 0.00390625; //In minutes
     newBlog.wordCount = wordCount;
     newBlog.readTime = readTime;
+    //Add tag ids in blogAssets.tags array
+    newBlog.blogAssets.tags = allTagsId!;
     await newBlog.save({ validateModifiedOnly: true });
 
     return res
@@ -86,10 +103,12 @@ export const getBlogById = tryCatchWrapper<CustomRequest>(
         .status(400)
         .json(new CustomError(400, "Send Valid Object Id!"));
     }
-    const existingBlog = await Blog.findById(blogId).populate(
-      "author",
-      "-password - refreshToken -googleId -provider -isVerified"
-    );
+    const existingBlog = await Blog.findById(blogId)
+      .populate(
+        "author",
+        "-password -refreshToken -googleId -provider -isVerified"
+      )
+      .populate("blogAssets.tags", "name"); //test this logic
     if (!existingBlog) {
       return res.status(404).json(new CustomError(400, "No Such Blog Exists!"));
     }

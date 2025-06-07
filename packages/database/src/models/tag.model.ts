@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument, InferSchemaType } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 const tagSchema = new mongoose.Schema(
@@ -16,6 +16,9 @@ const tagSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+type schemaType = InferSchemaType<typeof tagSchema>;
+export type TagDocumentType = HydratedDocument<schemaType>;
+
 tagSchema.plugin(mongooseAggregatePaginate);
 
-const Tag = mongoose.model("Tag", tagSchema);
+export const Tag = mongoose.model("Tag", tagSchema);
