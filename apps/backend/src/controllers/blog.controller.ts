@@ -78,22 +78,6 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
   }
 );
 
-//This controller will get all blogs based on search query, filters, sortBy and sortType, user will also sent page and limit (to paginate data)
-export const getAllBlogs = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response) => {
-    const {
-      query = "",
-      page = 1,
-      limit = 10,
-      sortBy = "createdAt",
-      sortType = 1,
-      filter = "",
-      userId = "", // used when a user tries to find all the blogs by author === userId
-    } = req.query;
-    //TODO: Add input validation for req.body using zod
-  }
-);
-
 export const getBlogById = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { blogId } = req.params;

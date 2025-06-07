@@ -4,7 +4,7 @@ import { CustomApiResponse } from "@readium/utils/customApiResponse";
 import { CustomError } from "@readium/utils/customError";
 import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { Response, Request } from "express";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 import path from "node:path";
 import { deleteFromS3, getUrlFromS3, uploadToS3 } from "@readium/utils/s3";
 
@@ -190,5 +190,67 @@ export const getUserBookmarks = tryCatchWrapper<CustomRequest>(
 );
 
 export const getUserBlogHistory = tryCatchWrapper<CustomRequest>(
-  async (req: CustomRequest, res: Response) => {}
+  async (req: CustomRequest, res: Response) => {
+    const user = await User.aggregate([
+      //1. filter out document where _id: req.user?._id
+      {
+        $match: {
+          _id: new mongoose.Types.ObjectId(req.user?._id),
+        },
+      },
+      //2. left join the blog documents
+      {
+        $lookup: {
+          from: "blogs",
+          localField: "blogHistory",
+          foreignField: "_id",
+          as: "blogHistory",
+          pipeline: [
+            //perform $lookup on author
+            {
+              $lookup: {
+                from: "users",
+                localField: "author",
+                foreignField: "_id",
+                as: "author",
+                pipeline: [
+                  //Select and bring only these fields in author document.
+                  {
+                    $project: {
+                      username: 1,
+                      firstName: 1,
+                      lastName: 1,
+                      avatar: 1,
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+      //3. override author field with resultant author array field's(new field added by $lookup in pipeline) 0th element.
+      {
+        $addFields: {
+          author: {
+            $arrayElemAt: ["$author", 0],
+          },
+        },
+      },
+    ]);
+    if (user.length === 0) {
+      return res
+        .status(404)
+        .json(new CustomError(404, "Blog History Doesn't Exist!"));
+    }
+    return res
+      .status(200)
+      .json(
+        new CustomApiResponse(
+          200,
+          user[0].blogHistory,
+          "Blog History Fetched Successfully!"
+        )
+      );
+  }
 );
