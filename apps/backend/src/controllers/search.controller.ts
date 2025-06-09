@@ -118,7 +118,7 @@ export const getAllSuchBlogs = tryCatchWrapper<CustomRequest>(
     //TODO: Create logic of sortBy: month, year, most likes, views? (we might need to add view field in blog model[and think about logic of how will we count a view on a blog])
     const options = {
       page: parseInt(page as string),
-      limit: parseInt(page as string),
+      limit: parseInt(limit as string),
       sort: {
         [sortBy as string]: sortType,
       },
