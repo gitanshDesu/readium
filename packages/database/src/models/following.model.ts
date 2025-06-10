@@ -3,12 +3,12 @@ import mongoose from "mongoose";
 const followingSchema = new mongoose.Schema(
   {
     follower: {
-      // followedBy
+      // Here goes - us (who followed xyz person)
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
     following: {
-      // Person we are following
+      // Here goes People we follow
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },

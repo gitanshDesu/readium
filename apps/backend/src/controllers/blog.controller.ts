@@ -17,9 +17,16 @@ const getArrayOfTagIds = async (tags: string[]) => {
   try {
     const allTagDocs = await Promise.all(
       (tags as string[]).map((tagName) => Tag.findOne({ name: tagName }))
-    );
+    ); //returns null when no docs found
 
-    const allTagsId = allTagDocs.map((tag: TagDocumentType) => tag?._id);
+    if (allTagDocs.length === 0) {
+      throw new CustomError(404, "No Tags Exist!");
+    }
+    //so, we need to include null in tag type because their is a chance allTagsDocs has elements null (because user can send a tag name for whom doc doesn't exist)(i.e. no docs). It will be good to filter out null elements
+    const allTagsId = allTagDocs
+      .filter((tag) => tag !== null) //filter out null elements
+      .map((tag: TagDocumentType) => tag?._id); //now no null values present so need to add null type with TagDocumentType
+
     return allTagsId;
   } catch (error) {
     //TODO: Add Custom Error

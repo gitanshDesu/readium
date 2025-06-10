@@ -15,7 +15,9 @@ const getArrayOfTagIds = async (filter: string[]) => {
       (filter as string[]).map((tagName) => Tag.findOne({ name: tagName }))
     );
 
-    const allTagsId = allTagDocs.map((tag: TagDocumentType) => tag?._id);
+    const allTagsId = allTagDocs
+      .filter((tag) => tag !== null)
+      .map((tag: TagDocumentType) => tag?._id);
     return allTagsId;
   } catch (error) {
     //TODO: Add Custom Error
