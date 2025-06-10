@@ -38,6 +38,8 @@ const commentSchema = new mongoose.Schema<IComment>(
   { timestamps: true }
 );
 
+//TODO: Add pre hook to calculate repliesCount (!replies.isModified -> next) else repliesCount = replies.length() and update this field in Comment Model
+
 commentSchema.post("findOneAndDelete", async function () {
   const comment = this.getQuery()?._id;
   await Reply.deleteMany({ comment });
