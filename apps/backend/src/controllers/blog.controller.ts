@@ -8,6 +8,8 @@ import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { Request, Response } from "express";
 import mongoose, { isValidObjectId } from "mongoose";
 import path from "path";
+import { createBlogInputSchema } from "@readium/zod/createBlog";
+import { updateBlogInputSchema } from "@readium/zod/updateBlog";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
@@ -38,7 +40,13 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { title, content, tags } = req.body;
 
-    //TODO: Add Input Validation for req.body using zod
+    const validation = createBlogInputSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res
+        .status(400)
+        .json(new CustomError(400, validation.error.message));
+    }
 
     //1. get thumbnail and store it in DB
     const thumbnailFileName = req.file?.filename;
@@ -144,8 +152,17 @@ export const updateBlog = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { blogId } = req.params;
     const { title, content } = req.body; //title, content could be optional
+
     const newThumbnailFileName = req.file?.filename; //could be optional
-    //TODO: Do input validation on req.body
+
+    const validation = updateBlogInputSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      return res
+        .status(400)
+        .json(new CustomError(400, validation.error.message));
+    }
+
     if (!isValidObjectId(blogId)) {
       return res
         .status(400)

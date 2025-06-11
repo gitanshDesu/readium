@@ -14,6 +14,11 @@ interface CustomRequest extends Request {
 export const createTag = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { name } = req.body;
+    if (name?.trim() === "") {
+      return res
+        .status(400)
+        .json(new CustomError(400, "name field is required!"));
+    }
     const existingTag = await Tag.findOne({
       name,
     });
@@ -83,12 +88,18 @@ export const getAllTags = tryCatchWrapper<CustomRequest>(
 export const editTag = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { tagId } = req.params;
+
     if (!isValidObjectId(tagId)) {
       return res.status(400).json(new CustomError(400, "Send Valid Tag Id!"));
     }
 
     const { name } = req.body;
-    //TODO: Add input Validation
+
+    if (name?.trim() === "") {
+      return res
+        .status(400)
+        .json(new CustomError(400, "name field is required!"));
+    }
 
     const existingTag = await Tag.findOne({
       $and: [

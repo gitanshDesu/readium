@@ -1,1 +1,1 @@
-{"root":["./src/forgotPassword.ts","./src/loginUser.ts","./src/registerUser.ts","./src/resetPassword.ts","./src/verfiyEmail.ts"],"version":"5.8.3"}
+{"root":["./src/createBlog.ts","./src/forgotPassword.ts","./src/getAllSuchBlogs.ts","./src/loginUser.ts","./src/registerUser.ts","./src/resetPassword.ts","./src/updateAccountDetails.ts","./src/updateBlog.ts","./src/verfiyEmail.ts"],"version":"5.8.3"}

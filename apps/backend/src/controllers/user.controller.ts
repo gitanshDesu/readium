@@ -7,7 +7,7 @@ import { Response, Request } from "express";
 import mongoose, { isValidObjectId } from "mongoose";
 import path from "node:path";
 import { deleteFromS3, getUrlFromS3, uploadToS3 } from "@readium/utils/s3";
-
+import { updateAccountDetailsInputSchema } from "@readium/zod/updateAccountDetails";
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
 }
@@ -38,9 +38,13 @@ export const getAllUserBlogs = tryCatchWrapper<CustomRequest>(
 export const updateAccountDetails = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { NewFirstName, NewLastName, NewUsername, OldUsername } = req.body;
-    OldUsername;
     //1. Validate Input
-
+    const validation = updateAccountDetailsInputSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res
+        .status(400)
+        .json(new CustomError(400, validation.error.message));
+    }
     //2. Make sure person sending request to update and person they are updating are same (compare req.user._id and user with OldUsername _id)
 
     const allowedUser = await User.findOne({ username: OldUsername }).select(

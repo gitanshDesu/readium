@@ -15,6 +15,16 @@ export const createReply = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     //sending replyId is optional
     const { commentId, replyId, repliedUnder, content } = req.body;
+    if (content?.trim() === "") {
+      return res
+        .status(400)
+        .json(new CustomError(400, "content field is required!"));
+    }
+    if (repliedUnder !== "comment" && repliedUnder !== "reply") {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Send Correct repliedUnder option!"));
+    }
     //TODO: Add Input Validation for req.body
     //logic to reply under a comment
     if (!isValidObjectId(commentId)) {
@@ -118,6 +128,11 @@ export const editReply = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { replyId } = req.params;
     const { content } = req.body;
+    if (content?.trim() === "") {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Content field is required!"));
+    }
     //TODO: Add input validation for req.body
     if (!isValidObjectId(replyId)) {
       return res.status(400).json(new CustomError(400, "Send Valid Reply Id!"));

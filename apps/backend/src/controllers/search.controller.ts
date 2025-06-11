@@ -4,6 +4,8 @@ import { User, UserDocumentType } from "@readium/database/user.model";
 import { CustomApiResponse } from "@readium/utils/customApiResponse";
 import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { Request, Response } from "express";
+import { getAllSuchBlogsInputSchema } from "@readium/zod/getAllSuchBlogs";
+import { CustomError } from "@readium/utils/customError";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
@@ -37,7 +39,21 @@ export const getAllSuchBlogs = tryCatchWrapper<CustomRequest>(
       sortType = 1,
       filter = [], //user can select multiple tags
     } = req.query;
-    //TODO: Add input validation for req.query using zod
+
+    const validation = getAllSuchBlogsInputSchema.safeParse({
+      query,
+      page,
+      limit,
+      sortBy,
+      sortType,
+      filter,
+    });
+
+    if (!validation.success) {
+      return res
+        .status(400)
+        .json(new CustomError(400, validation.error.message));
+    }
 
     //create array of Tag ids using "filter" array.
     const allTagsId = await getArrayOfTagIds(filter as string[]);

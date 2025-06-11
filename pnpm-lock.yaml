@@ -54,6 +54,9 @@ importers:
       '@readium/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@readium/zod':
+        specifier: workspace:*
+        version: link:../../packages/zod
       '@types/cookie-parser':
         specifier: ^1.4.8
         version: 1.4.8(@types/express@5.0.1)

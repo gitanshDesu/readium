@@ -25,6 +25,22 @@
         "./resetPassword":{
             "types":"./src/resetPassword.ts",
             "default":"./dist/resetPassword.js"
+        },
+        "./updateAccountDetails":{
+            "types":"./src/updateAccountDetails.ts",
+            "default":"./dist/updateAccountDetails.js"
+        },
+        "./createBlog":{
+            "types":"./src/createBlog.ts",
+            "default":"./dist/createBlog.js"
+        },
+        "./getAllSuchBlogs":{
+            "types":"./src/getAllSuchBlogs.ts",
+            "default":"./dist/getAllSuchBlogs.js"
+        },
+        "./updateBlog":{
+            "types":"./src/updateBlog.ts",
+            "default":"./dist/updateBlog.js"
         }
     },
     "scripts": {

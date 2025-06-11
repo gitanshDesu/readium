@@ -14,6 +14,11 @@ interface CustomRequest extends Request {
 export const createComment = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { blogId, content } = req.body;
+    if (content?.trim() === "") {
+      return res
+        .status(400)
+        .json(new CustomError(400, "Content field is required!"));
+    }
     if (!isValidObjectId(blogId)) {
       return res.status(400).json(new CustomError(400, "Send Valid Blog Id!"));
     }
@@ -93,21 +98,31 @@ export const editComment = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { commentId } = req.params;
     const { content } = req.body;
+
     if (!isValidObjectId(commentId)) {
       return res
         .status(400)
         .json(new CustomError(400, "Send Valid Comment Id!"));
     }
+
+    if (content?.trim() === "") {
+      return res
+        .status(400)
+        .json(new CustomError(400, "content field is required!"));
+    }
+
     const existingComment = await Comment.findOne({
       $and: [{ _id: commentId }, { commentedBy: req.user?._id }],
     })
       .select("-blog")
       .populate("commentedBy", "username firstName lastName avatar");
+
     if (!existingComment) {
       return res
         .status(404)
         .json(new CustomError(404, "Comment Doesn't Exist!"));
     }
+
     existingComment.content = content;
     await existingComment.save({ validateModifiedOnly: true });
     return res
