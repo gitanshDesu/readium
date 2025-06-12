@@ -110,6 +110,7 @@ export const getAllReplies = tryCatchWrapper<CustomRequest>(
         .status(400)
         .json(new CustomError(400, "Send Valid Comment Id!"));
     }
+    //TODO: Add logic to bring all replies under replies here as well
     const existingComment =
       await Comment.findById(commentId).populate("replies");
     if (!existingComment) {

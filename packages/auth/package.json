@@ -18,6 +18,10 @@
         "./passportConfig": {
             "types": "./src/middleware/passport.middleware.ts",
             "default": "./dist/middleware/passport.middleware.js"
+        },
+        "./isLoggedIn":{
+            "types":"./src/middleware/auth.middleware.ts",
+            "default":"./dist/middleware/auth.middleware.js"
         }
     },
     "scripts": {

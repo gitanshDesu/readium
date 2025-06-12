@@ -17,7 +17,7 @@ export const getAllUserBlogs = tryCatchWrapper<CustomRequest>(
     //1. get all blogs where owner === user._id
     const allBlogs = await Blog.find({
       author: req.user?._id,
-    }).populate("author", "username email avatar firstName lastName"); //populate: Specifies paths which should be populated with other documents.
+    }).populate("author", "username avatar firstName lastName"); //populate: Specifies paths which should be populated with other documents.
     if (allBlogs.length === 0) {
       return res
         .status(404)
@@ -48,7 +48,7 @@ export const updateAccountDetails = tryCatchWrapper<CustomRequest>(
     //2. Make sure person sending request to update and person they are updating are same (compare req.user._id and user with OldUsername _id)
 
     const allowedUser = await User.findOne({ username: OldUsername }).select(
-      "-password -bookmarks -blogHistory -googleId -provider -refreshToken"
+      "-password -bookmarks -blogHistory -googleId -provider -refreshToken -email"
     );
 
     //This is also important for telling TS that allowedUser is not null
@@ -177,7 +177,7 @@ export const getUserBookmarks = tryCatchWrapper<CustomRequest>(
         await Blog.findById(blogId)
           .populate(
             "author",
-            "-password -bookmarks -blogHistory -refreshToken -googleId -provider"
+            "-password -bookmarks -blogHistory -refreshToken -googleId -provider -email"
           )
           .populate("tags", "-createdBy")
     );

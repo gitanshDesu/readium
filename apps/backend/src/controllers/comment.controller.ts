@@ -50,6 +50,8 @@ export const getAllComments = tryCatchWrapper<CustomRequest>(
     if (!existingBlog) {
       return res.status(404).json(new CustomError(404, "Blog Doesn't Exist!"));
     }
+
+    //TODO: Add logic to gell replies as well here
     const allComments = await Comment.aggregate([
       {
         $match: {
