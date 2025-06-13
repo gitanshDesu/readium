@@ -8,15 +8,27 @@ import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { Request, Response } from "express";
 import mongoose, { isValidObjectId } from "mongoose";
 import path from "path";
-import { createBlogInputSchema } from "@readium/zod/createBlog";
+import {
+  createBlogBodySchema,
+  CreateBlogBodyType,
+  CreateBlogQueryType,
+  createBlogQuerySchema,
+} from "@readium/zod/createBlog";
 import { updateBlogInputSchema } from "@readium/zod/updateBlog";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
 }
 
-const getArrayOfTagIds = async (tags: string[]) => {
+const getArrayOfTagIds = async (tags: string[] | undefined) => {
   try {
+    if (!tags) {
+      return [];
+    }
+    if (!Array.isArray(tags)) {
+      console.error("Expected array but got:", typeof tags, tags);
+      throw new CustomError(400, "Tags must be an array of strings");
+    }
     const allTagDocs = await Promise.all(
       (tags as string[]).map((tagName) => Tag.findOne({ name: tagName }))
     ); //returns null when no docs found
@@ -24,7 +36,7 @@ const getArrayOfTagIds = async (tags: string[]) => {
     if (allTagDocs.length === 0) {
       throw new CustomError(404, "No Tags Exist!");
     }
-    //so, we need to include null in tag type because their is a chance allTagsDocs has elements null (because user can send a tag name for whom doc doesn't exist)(i.e. no docs). It will be good to filter out null elements
+
     const allTagsId = allTagDocs
       .filter((tag) => tag !== null) //filter out null elements
       .map((tag: TagDocumentType) => tag?._id); //now no null values present so need to add null type with TagDocumentType
@@ -38,14 +50,22 @@ const getArrayOfTagIds = async (tags: string[]) => {
 
 export const createBlog = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
-    const { title, content, tags } = req.body;
+    const { title, content }: CreateBlogBodyType = req.body;
+    const { tags = [] }: CreateBlogQueryType = req.query;
 
-    const validation = createBlogInputSchema.safeParse(req.body);
+    const validation = createBlogBodySchema.safeParse(req.body);
 
-    if (!validation.success) {
+    const queryValidation = createBlogQuerySchema.safeParse(req.query);
+
+    if (!validation.success || !queryValidation.success) {
       return res
         .status(400)
-        .json(new CustomError(400, validation.error.message));
+        .json(
+          new CustomError(
+            400,
+            validation.error?.message || queryValidation.error?.message
+          )
+        );
     }
 
     //1. get thumbnail and store it in DB
@@ -88,19 +108,30 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
       content,
       thumbnail: thumbnailUrl,
       author: req.user?._id,
+      blogAssets: {
+        //I have to initialize blogAssets object otherwise mongoose doesn't set this path in mongo and blogAssets Object remains undefined.
+        images: [],
+        videos: [],
+        tags: [],
+      },
+      slug: title, // I have to give slug(as slug is required path) otherwise mongoose throws slug required validation error
     });
 
     //TODO: 4. store extracted blog assets (image, videos) with tags in DB
 
-    //5. Calculate word count read time - Create util for this
-    const allTagsId = await getArrayOfTagIds(tags);
+    //5. Calculate word count read time
+    const allTagsId = await getArrayOfTagIds(tags as string[]);
+
     const wordCount = newBlog.content.split(" ").length;
     const readTime = wordCount * 0.00390625; //In minutes
+
     newBlog.wordCount = wordCount;
     newBlog.readTime = readTime;
+
     //Add tag ids in blogAssets.tags array
     newBlog.blogAssets.tags = allTagsId!;
-    await newBlog.save({ validateModifiedOnly: true });
+
+    await newBlog.save({ validateModifiedOnly: true }); //have to do this otherwise;
 
     return res
       .status(201)
@@ -121,7 +152,7 @@ export const getBlogById = tryCatchWrapper<CustomRequest>(
     const existingBlog = await Blog.findById(blogId)
       .populate(
         "author",
-        "-password -refreshToken -googleId -provider -isVerified"
+        "-password -refreshToken -googleId -provider -isVerified -email"
       )
       .populate("blogAssets.tags", "name"); //test this logic
     if (!existingBlog) {

@@ -24,8 +24,8 @@ router
 
 router.route("/delete/:blogId").delete(isLoggedIn, deleteBlog);
 
-router.route("/toggle-bookmark").post(isLoggedIn, toggleBookMark);
+router.route("/toggle-bookmark/:blogId").post(isLoggedIn, toggleBookMark);
 
-router.route("/toggle-publish").post(isLoggedIn, togglePublish);
+router.route("/toggle-publish/:blogId").post(isLoggedIn, togglePublish);
 
 export { router as blogRouter };

@@ -34,24 +34,33 @@ interface BlogMethods {
 }
 
 const blogAssetsSchema = new mongoose.Schema({
-  images: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Image",
-    },
-  ],
-  videos: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Video",
-    },
-  ],
-  tags: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Tag",
-    },
-  ],
+  images: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Image",
+      },
+    ],
+    default: [],
+  },
+  videos: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video",
+      },
+    ],
+    default: [],
+  },
+  tags: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Tag",
+      },
+    ],
+    default: [],
+  },
 });
 
 const blogSchema = new mongoose.Schema<IBlog, Model<IBlog>, BlogMethods>(
@@ -98,7 +107,7 @@ const blogSchema = new mongoose.Schema<IBlog, Model<IBlog>, BlogMethods>(
   { timestamps: true }
 );
 blogSchema.methods.slugifyTitle = (title: string) => {
-  const slug = title.toLowerCase().replace(" ", "-");
+  const slug = title.toLowerCase().replace(/\s+/g, "-"); //takes regExp and replace all matches otherwise only replace first search value so, give regExp to replace all spaces in title;
   return slug;
 };
 
