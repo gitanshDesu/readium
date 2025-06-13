@@ -257,7 +257,19 @@ export const deleteBlog = tryCatchWrapper<CustomRequest>(
     if (!existingBlog) {
       return res.status(404).json(new CustomError(404, "Blog Doesn't Exist!"));
     }
-    //TODO: Add post middleware on findByIdAndDelete Query to delete all related images and videos from images and videos collection after blog gets deleted (just like Delete on cascade)
+
+    //delete thumbnail from S3
+
+    const thumbnail = existingBlog.thumbnail;
+
+    const key = thumbnail?.split("?")[0]?.split("/")[3]!;
+    const response = await deleteFromS3(key);
+    if (!response) {
+      throw new CustomError(500, "Error Occurred While Deleting Old Avatar!");
+    }
+
+    //TODO: Also Delete Blog Assets- Images and Videos from S3 as well
+
     const deletedBlog = await Blog.findOneAndDelete({ _id: existingBlog._id });
     if (!deleteBlog) {
       return res

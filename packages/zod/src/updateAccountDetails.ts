@@ -1,23 +1,24 @@
 import z from "zod/v4";
 
 export const updateAccountDetailsInputSchema = z.object({
-  NewFirstName: z
+  newFirstName: z
     .string()
     .max(50, "You can use upto 50 characters for a first name")
     .trim()
     .toLowerCase(),
-  NewLastName: z
+  newLastName: z
     .string()
     .max(50, "You can use upto 50 characters for a last name")
     .trim()
-    .toLowerCase(),
-  NewUsername: z
+    .toLowerCase()
+    .optional(),
+  newUserName: z
     .string()
     .max(50, "You can use upto 50 characters for a username")
     .trim()
     .toLowerCase()
     .optional(),
-  OldUsername: z
+  oldUserName: z
     .string()
     .max(50, "You can use upto 50 characters for a username")
     .trim()

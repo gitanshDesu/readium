@@ -154,22 +154,27 @@ userSchema.methods.generateRefreshToken = function () {
 
 //post hook to delete all user's blogs,likes,replies,comment,after user is deleted successfully - similar to delete on Cascade SQL
 userSchema.post("findOneAndDelete", async function () {
-  console.log(this.getQuery());
-  const author = this.getQuery()?._id;
-  await Comment.deleteMany({ commentedBy: author });
-  await Reply.deleteMany({ repliedBy: author });
-  //if all blogs are getting deleted we don't need image and video links assets in each blog in our DB.So, first delete images and videos
-  const allAuthorBlogs = await this.find({ author });
-  allAuthorBlogs.map(async (blog) => {
-    await Image.deleteMany({ blog: blog._id });
-    await Video.deleteMany({ blog: blog._id });
-  });
-  //now delete all the blogs
-  await Blog.deleteMany({ author });
-  //Remove author followers
-  await Following.deleteMany({ following: author });
-  //Remove author from other author's follower's list
-  await Following.deleteMany({ follower: author });
+  try {
+    const author = this.getQuery()?._id;
+    await Comment.deleteMany({ commentedBy: author });
+    await Reply.deleteMany({ repliedBy: author });
+    //if all blogs are getting deleted we don't need image and video links assets in each blog in our DB.So, first delete images and videos
+
+    //TODO: Also figure out logic to delete these images and videos from S3 as well
+    const allAuthorBlogs = await Blog.find({ author });
+    allAuthorBlogs.map(async (blog) => {
+      await Image.deleteMany({ blog: blog._id });
+      await Video.deleteMany({ blog: blog._id });
+    });
+    //now delete all the blogs
+    await Blog.deleteMany({ author });
+    //Remove author followers
+    await Following.deleteMany({ following: author });
+    //Remove author from other author's follower's list
+    await Following.deleteMany({ follower: author });
+  } catch (error) {
+    throw new Error(`Error Occurred While Deleting On Cascade:\n ${error}`);
+  }
 });
 
 //extracting type of User Document so that we can set type in CustomRequest interface in auth middleware

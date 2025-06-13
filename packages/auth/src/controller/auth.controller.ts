@@ -159,12 +159,36 @@ export const loginUser = tryCatchWrapper<Request>(
             )
           );
       }
+      //5. Check if the password sent is correct; if not send 401, Invalid password
+      const isPasswordValid = await existingUser.isPasswordCorrect(password);
+
+      if (!isPasswordValid) {
+        return res.status(401).json(new CustomError(401, "Invalid Password!"));
+      }
+
+      //6. generate access and refersh tokens, and set refershToken in existingUser.refeshToken field
+
+      const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+        existingUser.username
+      );
+
+      existingUser.refreshToken = refreshToken;
+      await existingUser.save({ validateBeforeSave: false });
+
+      //7. set cookies for access token and refersh token and send 200 response
+      const options = {
+        httpOnly: true,
+        secure: true,
+      };
       return res
         .status(401)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
         .json(
-          new CustomError(
-            401,
-            "Please Verify Your Email! Check Your Mail for Valid Verification Code!"
+          new CustomApiResponse(
+            200,
+            existingUser,
+            "User Logged In BUT Not Verified, Check Mail !"
           )
         );
     }
@@ -216,7 +240,7 @@ export const verifyEmailHandler = tryCatchWrapper<CustomRequest>(
         .json(new CustomError(400, "Send Correct Verify Email Fields!"));
     }
     const isVerified = await verifyEmail(verificationCode);
-    console.log(isVerified);
+
     if (isVerified) {
       return res
         .status(200)
