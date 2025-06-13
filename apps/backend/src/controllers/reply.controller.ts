@@ -5,7 +5,7 @@ import { CustomApiResponse } from "@readium/utils/customApiResponse";
 import { CustomError } from "@readium/utils/customError";
 import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { Request, Response } from "express";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
@@ -83,8 +83,8 @@ export const createReply = tryCatchWrapper<CustomRequest>(
         }).then((newReply) =>
           newReply.populate("repliedBy", "username firstName lastName avatar")
         );
-        newReply.replies.push(newReply._id);
-        await newReply.save({ validateModifiedOnly: true });
+        existingReply?.replies.push(newReply._id);
+        await existingReply?.save({ validateModifiedOnly: true });
         return res
           .status(200)
           .json(
@@ -99,7 +99,8 @@ export const createReply = tryCatchWrapper<CustomRequest>(
   }
 );
 
-//Get all Replies under a comment or reply (using comment id or reply id [To get all replies under a reply we might need both comment id and reply id (ponder about this while trying to figure out algo for this controller)])
+//Get all Replies under a comment using commentId
+//TODO: Think about how reply under a reply under a reply (how to get this dense or inner inner replies?)
 export const getAllReplies = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     //reply id can be optional
@@ -111,16 +112,100 @@ export const getAllReplies = tryCatchWrapper<CustomRequest>(
         .json(new CustomError(400, "Send Valid Comment Id!"));
     }
     //TODO: Add logic to bring all replies under replies here as well
-    const existingComment =
-      await Comment.findById(commentId).populate("replies");
+    const existingComment = await Comment.findById(commentId);
     if (!existingComment) {
       return res
         .status(404)
         .json(new CustomError(404, "Comment Doesn't Exist!"));
     }
-    //Test output
-    console.log(existingComment.replies);
+
+    const allReplies = await Reply.aggregate([
+      {
+        $match: {
+          comment: new mongoose.Types.ObjectId(commentId),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "repliedBy",
+          foreignField: "_id",
+          as: "repliedBy",
+          pipeline: [
+            {
+              $project: {
+                username: 1,
+                firstName: 1,
+                lastName: 1,
+                avatar: 1,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $lookup: {
+          from: "replies",
+          as: "replies",
+          foreignField: "_id",
+          localField: "replies",
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                as: "repliedBy",
+                localField: "repliedBy",
+                foreignField: "_id",
+                pipeline: [
+                  {
+                    $project: {
+                      username: 1,
+                      firstName: 1,
+                      lastName: 1,
+                      avatar: 1,
+                    },
+                  },
+                ],
+              },
+            },
+            {
+              $project: {
+                repliedBy: 1,
+                content: 1,
+                createdAt: 1,
+                updatedAt: 1,
+                repliedUnder: 1,
+                replies: 1,
+              },
+            },
+            {
+              $addFields: {
+                repliedBy: {
+                  $first: "$repliedBy",
+                },
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          repliedBy: {
+            $first: "$repliedBy",
+          },
+        },
+      },
+    ]);
     //TODO: Based on output complete this controller
+    return res
+      .status(200)
+      .json(
+        new CustomApiResponse(
+          200,
+          allReplies,
+          "All Replies Fetched Successfully"
+        )
+      );
   }
 );
 
@@ -140,7 +225,7 @@ export const editReply = tryCatchWrapper<CustomRequest>(
     }
     const existingReply = await Reply.findOne({
       $and: [{ _id: replyId }, { repliedBy: req.user?._id }],
-    }).select("-repliedBy -replies -comment -reply repliesCount");
+    }).select("-replies -comment -reply -repliesCount");
     if (!existingReply) {
       return res.status(404).json(new CustomError(404, "Reply Doesn't Exist!"));
     }
@@ -149,7 +234,11 @@ export const editReply = tryCatchWrapper<CustomRequest>(
     return res
       .status(200)
       .json(
-        new CustomApiResponse(200, existingReply, "Reply Edited Successfully!")
+        new CustomApiResponse(
+          200,
+          { content: existingReply.content, _id: existingReply._id },
+          "Reply Edited Successfully!"
+        )
       );
   }
 );

@@ -86,11 +86,15 @@ export const getAllComments = tryCatchWrapper<CustomRequest>(
       },
     ]);
     //TODO: Add paginate logic
-    console.log("allComments Array: \n", allComments);
+
     return res
       .status(200)
       .json(
-        new CustomApiResponse(200, {}, "All Comments Fetched Successfully!")
+        new CustomApiResponse(
+          200,
+          allComments,
+          "All Comments Fetched Successfully!"
+        )
       );
   }
 );
