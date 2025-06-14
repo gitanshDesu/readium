@@ -24,7 +24,7 @@ export const ToggleFollow = tryCatchWrapper<CustomRequest>(
       return res.status(404).json(new CustomError(404, "User Doesn't Exist!"));
     }
     //Don't let user follow themselves
-    if (existingUser._id.equals(new mongoose.Types.ObjectId(authorId))) {
+    if (req.user?._id.equals(new mongoose.Types.ObjectId(authorId))) {
       return res
         .status(400)
         .json(new CustomError(400, "User Can't Follow themselves!"));
@@ -58,8 +58,8 @@ export const getAllFollowers = tryCatchWrapper<CustomRequest>(
     const allFollowers = await Following.find({
       following: req.user?._id,
     })
-      .populate("follower", "username firstName lastName avatar email")
-      .populate("following", "username firstName lastName avatar email");
+      .populate("follower", "username firstName lastName avatar")
+      .populate("following", "username firstName lastName avatar");
     if (allFollowers.length === 0) {
       return res
         .status(404)
@@ -84,8 +84,8 @@ export const getFollowedUsers = tryCatchWrapper<CustomRequest>(
     const allFollowedAuthors = await Following.find({
       follower: req.user?._id,
     })
-      .populate("following", "username firstName lastName avatar email")
-      .populate("follower", "username firstName lastName avatar email");
+      .populate("following", "username firstName lastName avatar")
+      .populate("follower", "username firstName lastName avatar");
     if (allFollowedAuthors.length === 0) {
       return res
         .status(404)

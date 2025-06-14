@@ -15,9 +15,19 @@ import {
   createBlogQuerySchema,
 } from "@readium/zod/createBlog";
 import { updateBlogInputSchema } from "@readium/zod/updateBlog";
+import QueryString from "qs";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
+}
+
+function isStringifiedArray(str: string) {
+  try {
+    const parsed = JSON.parse(str);
+    return Array.isArray(parsed);
+  } catch (e) {
+    return false;
+  }
 }
 
 const getArrayOfTagIds = async (tags: string | string[] | undefined) => {
@@ -26,11 +36,11 @@ const getArrayOfTagIds = async (tags: string | string[] | undefined) => {
     if (!tags) {
       return [];
     }
-    if (!Array.isArray(tags) || typeof tags !== "string") {
+    if (!Array.isArray(tags) && typeof tags !== "string") {
       console.error("Expected array or string but got:", typeof tags, tags);
-      throw new CustomError(400, "Tags must be an array of strings");
+      throw new CustomError(400, "Tags must be an array of strings or strings");
     }
-    if (typeof tags === "string" && Array.isArray(JSON.parse(tags))) {
+    if (typeof tags === "string" && isStringifiedArray(tags)) {
       console.error("Expected array or string but not a stringyfied array");
       throw new CustomError(
         400,
@@ -39,7 +49,7 @@ const getArrayOfTagIds = async (tags: string | string[] | undefined) => {
     }
     if (
       typeof tags === "string" &&
-      !Array.isArray(JSON.parse(tags)) &&
+      !isStringifiedArray(tags) &&
       !Array.isArray(tags)
     ) {
       const tagDoc = await Tag.findOne({ name: tags });
@@ -68,7 +78,8 @@ const getArrayOfTagIds = async (tags: string | string[] | undefined) => {
 export const createBlog = tryCatchWrapper<CustomRequest>(
   async (req: CustomRequest, res: Response) => {
     const { title, content }: CreateBlogBodyType = req.body;
-    const { tags = [] }: CreateBlogQueryType = req.query;
+
+    const { tags }: CreateBlogQueryType | QueryString.ParsedQs = req.query;
 
     const validation = createBlogBodySchema.safeParse(req.body);
 
@@ -135,7 +146,9 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
     //TODO: 4. store extracted blog assets (image, videos) with tags in DB
 
     //5. Calculate word count read time
-    const allTagsId = await getArrayOfTagIds(tags as string[]);
+    const allTagsId = await getArrayOfTagIds(
+      tags as string[] | string | undefined
+    );
 
     const wordCount = newBlog.content.split(" ").length;
     const readTime = wordCount * 0.00390625; //In minutes

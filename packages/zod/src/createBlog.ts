@@ -6,7 +6,10 @@ export const createBlogBodySchema = z.object({
 });
 
 export const createBlogQuerySchema = z.object({
-  tags: z.array(z.string()).max(10, "Atmost 10 tags are allowed!").optional(),
+  tags: z.union([
+    z.string().optional(),
+    z.array(z.string()).max(10, "Atmost 10 tags are allowed!").optional(),
+  ]),
 });
 
 export type CreateBlogBodyType = z.infer<typeof createBlogBodySchema>;

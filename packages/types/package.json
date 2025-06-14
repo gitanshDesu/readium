@@ -6,22 +6,22 @@
         "./env": {
             "types": "./src/env.d.ts"
         },
-        "./passport-google-oidc":{
-            "types":"./src/passport-google-oidc.d.ts"
+        "./passport-google-oidc": {
+            "types": "./src/passport-google-oidc.d.ts"
         },
-        "./express":{
-            "types":"./src/express.d.ts"
+        "./express": {
+            "types": "./src/express.d.ts"
         }
     },
     "scripts": {
         "check-types": "tsc --noEmit"
     },
     "devDependencies": {
+        "@readium/database": "workspace:*",
         "@readium/typescript-config": "workspace:*",
-        "@readium/database":"workspace:*",
+        "@types/express": "^5.0.1",
         "@types/jsonwebtoken": "^9.0.9",
         "@types/node": "^22.15.3",
-        "@types/express": "^5.0.1",
         "typescript": "^5.8.3"
     },
     "keywords": [],
