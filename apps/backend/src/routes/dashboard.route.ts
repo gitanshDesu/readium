@@ -9,6 +9,8 @@ const router: Router = Router();
 
 router.route("/my-stats").get(isLoggedIn, getUserProfileStats);
 
-router.route("/author-stats").get(isLoggedIn, getAnotherUserProfileStats);
+router
+  .route("/author-stats/:userId")
+  .get(isLoggedIn, getAnotherUserProfileStats);
 
 export { router as dashboardRouter };

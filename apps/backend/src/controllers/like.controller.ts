@@ -37,8 +37,9 @@ export const toggleBlogLike = tryCatchWrapper<CustomRequest>(
         .status(200)
         .json(new CustomApiResponse(200, blogId, "Blog Liked Successfully!"));
     }
-    const removeLikeFromBlog =
-      await Like.findByIdAndDelete(blogId).select("-likedBy");
+    const removeLikeFromBlog = await Like.findByIdAndDelete(
+      alreadyLikedBlog._id
+    );
     return res
       .status(200)
       .json(new CustomApiResponse(200, blogId, "Blog Unliked Successfully!"));
@@ -74,7 +75,7 @@ export const toggleCommentLike = tryCatchWrapper<CustomRequest>(
           new CustomApiResponse(200, commentId, "Comment Liked Successfully!")
         );
     }
-    const unlikeComment = await Like.findByIdAndDelete(commentId);
+    const unlikeComment = await Like.findByIdAndDelete(alreadyLikedComment._id);
     return res
       .status(200)
       .json(
@@ -106,7 +107,7 @@ export const toggleReplyLike = tryCatchWrapper<CustomRequest>(
         .status(200)
         .json(new CustomApiResponse(200, replyId, "Reply Liked Successfully!"));
     }
-    const unlikeReply = await Like.findByIdAndDelete(replyId);
+    const unlikeReply = await Like.findByIdAndDelete(alreadyLikedReply._id);
     return res
       .status(200)
       .json(new CustomApiResponse(200, replyId, "Reply Unliked Successfully!"));

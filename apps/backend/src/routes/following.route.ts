@@ -8,7 +8,7 @@ import {
 
 const router: Router = Router();
 
-router.route("/toggle-follow").post(isLoggedIn, ToggleFollow);
+router.route("/toggle-follow/:authorId").post(isLoggedIn, ToggleFollow);
 
 router.route("/my-followers").get(isLoggedIn, getAllFollowers);
 

@@ -33,25 +33,29 @@ export const registerUser = tryCatchWrapper<Request>(
       email,
     });
 
-    //TODO: 2. Get avatar image from req.file using multer
+    // 2. Get avatar image from req.file using multer
+    //making uploading avatar optional
+
     const avatarFileName = req.file?.filename!;
-    if (!avatarFileName) {
-      throw new CustomError(400, "Avatar file is missing!");
-    }
+    let avatarUrl: string | undefined = "";
+    if (avatarFileName) {
+      const key = avatarFileName + path.extname(req.file?.originalname!);
 
-    const key = avatarFileName + path.extname(req.file?.originalname!);
-
-    const response = await uploadToS3(
-      key,
-      req.file?.path!,
-      req.file?.mimetype!
-    );
-    if (!response) {
-      throw new CustomError(500, "Error Occurred While Uploading Avatar");
-    }
-    const avatarUrl = await getUrlFromS3(key);
-    if (!avatarUrl) {
-      throw new CustomError(500, "Error occurred while getting Pre-Signed URL");
+      const response = await uploadToS3(
+        key,
+        req.file?.path!,
+        req.file?.mimetype!
+      );
+      if (!response) {
+        throw new CustomError(500, "Error Occurred While Uploading Avatar");
+      }
+      avatarUrl = await getUrlFromS3(key);
+      if (!avatarUrl) {
+        throw new CustomError(
+          500,
+          "Error occurred while getting Pre-Signed URL"
+        );
+      }
     }
 
     if (!validation.success) {
@@ -80,7 +84,7 @@ export const registerUser = tryCatchWrapper<Request>(
       password,
     });
     //Set avatar in DB
-    newUser.avatar! = avatarUrl;
+    newUser.avatar! = avatarUrl || "";
     await newUser.save({ validateModifiedOnly: true });
 
     const mailResponse = await sendMail(newUser, "VERIFY");

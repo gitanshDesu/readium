@@ -4,7 +4,7 @@ import { CustomApiResponse } from "@readium/utils/customApiResponse";
 import { CustomError } from "@readium/utils/customError";
 import { tryCatchWrapper } from "@readium/utils/tryCatchWrapper";
 import { Request, Response } from "express";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 
 interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
@@ -22,6 +22,12 @@ export const ToggleFollow = tryCatchWrapper<CustomRequest>(
     const existingUser = await User.findById(authorId);
     if (!existingUser) {
       return res.status(404).json(new CustomError(404, "User Doesn't Exist!"));
+    }
+    //Don't let user follow themselves
+    if (existingUser._id.equals(new mongoose.Types.ObjectId(authorId))) {
+      return res
+        .status(400)
+        .json(new CustomError(400, "User Can't Follow themselves!"));
     }
     // let a user follow an author. User(follower) --> following --> Author.
     const alreadyFollowingAuthor = await Following.findOne({

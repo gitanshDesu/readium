@@ -20,14 +20,31 @@ interface CustomRequest extends Request {
   user?: NonNullable<UserDocumentType>;
 }
 
-const getArrayOfTagIds = async (tags: string[] | undefined) => {
+const getArrayOfTagIds = async (tags: string | string[] | undefined) => {
   try {
+    //handle when tags is not an array but string i.e. when someone sends only 1 tag
     if (!tags) {
       return [];
     }
-    if (!Array.isArray(tags)) {
-      console.error("Expected array but got:", typeof tags, tags);
+    if (!Array.isArray(tags) || typeof tags !== "string") {
+      console.error("Expected array or string but got:", typeof tags, tags);
       throw new CustomError(400, "Tags must be an array of strings");
+    }
+    if (typeof tags === "string" && Array.isArray(JSON.parse(tags))) {
+      console.error("Expected array or string but not a stringyfied array");
+      throw new CustomError(
+        400,
+        "Tags must be Array or a string and not stringyfied array!"
+      );
+    }
+    if (
+      typeof tags === "string" &&
+      !Array.isArray(JSON.parse(tags)) &&
+      !Array.isArray(tags)
+    ) {
+      const tagDoc = await Tag.findOne({ name: tags });
+      const tagId = tagDoc?._id;
+      return tagId;
     }
     const allTagDocs = await Promise.all(
       (tags as string[]).map((tagName) => Tag.findOne({ name: tagName }))
@@ -69,35 +86,33 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
     }
 
     //1. get thumbnail and store it in DB
+    //make providing thumbnail optional
     const thumbnailFileName = req.file?.filename;
-    if (!thumbnailFileName) {
-      return res
-        .status(400)
-        .json(new CustomApiResponse(400, "Thumbnail File is Missing!"));
-    }
+    let thumbnailUrl: string | undefined = "";
+    if (thumbnailFileName) {
+      const key = thumbnailFileName + path.extname(req.file?.originalname!);
 
-    const key = thumbnailFileName + path.extname(req.file?.originalname!);
+      const response = await uploadToS3(
+        key,
+        req.file?.path!,
+        req.file?.mimetype!
+      );
 
-    const response = await uploadToS3(
-      key,
-      req.file?.path!,
-      req.file?.mimetype!
-    );
-
-    if (!response) {
-      return res
-        .status(500)
-        .json(
-          new CustomError(500, "Error Occurred While Uploading Thumbnail!")
-        );
-    }
-    const thumbnailUrl = await getUrlFromS3(key);
-    if (!thumbnailUrl) {
-      return res
-        .status(500)
-        .json(
-          new CustomError(500, "Error Occurred while getting thumbnail url!")
-        );
+      if (!response) {
+        return res
+          .status(500)
+          .json(
+            new CustomError(500, "Error Occurred While Uploading Thumbnail!")
+          );
+      }
+      thumbnailUrl = await getUrlFromS3(key);
+      if (!thumbnailUrl) {
+        return res
+          .status(500)
+          .json(
+            new CustomError(500, "Error Occurred while getting thumbnail url!")
+          );
+      }
     }
 
     //TODO: 2. extract images and videos from content(JSON of markdown or something else[figure this out]) - Create a util for this. (Figure out should we upload images/videos to S3 or cloudinary from BE or should we upload them on FE and send the link here which we will store in DB)
@@ -106,7 +121,7 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
     const newBlog = await Blog.create({
       title,
       content,
-      thumbnail: thumbnailUrl,
+      thumbnail: thumbnailUrl || "",
       author: req.user?._id,
       blogAssets: {
         //I have to initialize blogAssets object otherwise mongoose doesn't set this path in mongo and blogAssets Object remains undefined.
@@ -129,7 +144,12 @@ export const createBlog = tryCatchWrapper<CustomRequest>(
     newBlog.readTime = readTime;
 
     //Add tag ids in blogAssets.tags array
-    newBlog.blogAssets.tags = allTagsId!;
+    if (!Array.isArray(allTagsId)) {
+      newBlog.blogAssets.tags.push(allTagsId!);
+    }
+    if (Array.isArray(allTagsId)) {
+      newBlog.blogAssets.tags = allTagsId!;
+    }
 
     await newBlog.save({ validateModifiedOnly: true }); //have to do this otherwise;
 
