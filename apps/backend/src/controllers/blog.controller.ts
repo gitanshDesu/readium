@@ -282,20 +282,20 @@ export const updateBlog = tryCatchWrapper<CustomRequest>(
     }
     //we have either title or content and not thumbnail
     if (title || content) {
-      const updatedBlog = await Blog.findByIdAndUpdate(
-        blogId,
-        {
-          $set: {
-            ...(title ? { title: title } : {}),
-            ...(content ? { content: content } : {}),
-          },
-        },
-        { new: true }
-      );
+      //title is changed change slug as well
+      //have to replace findByIdAndUpdate method as that will not trigger pre-save hook to change slug when title changes! as pre-save hook will not run for update methods like updateOne, findByIdAndUpdate etc.
+      if (title) {
+        existingBlog.title = title;
+        await existingBlog.save({ validateModifiedOnly: true });
+      }
+      if (content) {
+        existingBlog.content = content;
+        await existingBlog.save({ validateModifiedOnly: true });
+      }
       return res
         .status(200)
         .json(
-          new CustomApiResponse(200, updatedBlog, "Blog Updated Successfully!")
+          new CustomApiResponse(200, existingBlog, "Blog Updated Successfully!")
         );
     }
     return res
